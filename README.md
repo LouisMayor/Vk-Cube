@@ -3,4 +3,6 @@
 
 ### Features:
 - ImGui
+- Obj model loading via TinyObjLoader
 - Supports multisampling
+- Supports mipmaps
