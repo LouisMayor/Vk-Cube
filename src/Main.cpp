@@ -18,11 +18,13 @@ int main()
 
 	g_VkGenerator.Init();
 
-	VkCubeDemo imgui_demo;
-	imgui_demo.SetShaderDirectory("../shaders/");
-	imgui_demo.Setup();
-	imgui_demo.Run();
-	imgui_demo.Shutdown();
+	VkCubeDemo cube_demo;
+	cube_demo.SetShaderDirectory("../assets/shaders/");
+	cube_demo.SetModelDirectory("../assets/models/");
+	cube_demo.SetTextureDirectory("../assets/textures/");
+	cube_demo.Setup();
+	cube_demo.Run();
+	cube_demo.Shutdown();
 
 	g_VkGenerator.Destroy();
 

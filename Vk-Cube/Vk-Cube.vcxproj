@@ -92,7 +92,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)..\src\include\glfw-3.2.1.bin.WIN32\include\GLFW\;$(SolutionDir)..\src\include\imgui-1.70\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\src\include\tinyobjloader-master\;$(SolutionDir)..\src\include\stb-master\;$(SolutionDir)..\src\include\glm\;$(VULKAN_SDK)\Include;$(SolutionDir)..\src\include\glfw-3.2.1.bin.WIN32\include\GLFW\;$(SolutionDir)..\src\include\imgui-1.70\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -123,7 +123,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)..\src\include\glfw-3.2.1.bin.WIN32\include\GLFW\;$(SolutionDir)..\src\include\imgui-1.70\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\src\include\tinyobjloader-master\;$(SolutionDir)..\src\include\stb-master\;$(SolutionDir)..\src\include\glm\;$(VULKAN_SDK)\Include;$(SolutionDir)..\src\include\glfw-3.2.1.bin.WIN32\include\GLFW\;$(SolutionDir)..\src\include\imgui-1.70\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -159,6 +159,8 @@
     <ClCompile Include="..\src\include\imgui-1.70\imgui_widgets.cpp" />
     <ClCompile Include="..\src\InputManager.cpp" />
     <ClCompile Include="..\src\Main.cpp" />
+    <ClCompile Include="..\src\Mesh.cpp" />
+    <ClCompile Include="..\src\Model.cpp" />
     <ClCompile Include="..\src\Settings.cpp" />
     <ClCompile Include="..\src\UI.cpp" />
   </ItemGroup>
@@ -179,6 +181,8 @@
     <ClInclude Include="..\src\include\imgui-1.70\imstb_truetype.h" />
     <ClInclude Include="..\src\include\InputManager.h" />
     <ClInclude Include="..\src\include\Logger.h" />
+    <ClInclude Include="..\src\include\Mesh.h" />
+    <ClInclude Include="..\src\include\Model.h" />
     <ClInclude Include="..\src\include\RenderPass.h" />
     <ClInclude Include="..\src\include\RenderTarget.h" />
     <ClInclude Include="..\src\include\Sampler.h" />
@@ -192,6 +196,12 @@
     <ClInclude Include="..\src\include\Vk-Generator\VkGenerator.ipp" />
     <ClInclude Include="..\src\include\VulkanHelpers.h" />
     <ClInclude Include="..\src\include\VulkanObjects.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\assets\shaders\triangle_no_mesh.frag" />
+    <None Include="..\assets\shaders\triangle_no_mesh.vert" />
+    <None Include="..\assets\shaders\ui.frag" />
+    <None Include="..\assets\shaders\ui.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

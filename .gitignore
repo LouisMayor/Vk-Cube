@@ -3,6 +3,15 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# tiny obj loader
+src/include/tinyobjloader-master/
+
+# STB
+src/include/stb-master/
+
+# GLM
+src/include/glm/
+
 # GLFW - 3.2.1 Win32
 src/include/glfw-3.2.1.bin.WIN32/
 

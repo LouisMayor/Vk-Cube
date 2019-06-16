@@ -261,19 +261,7 @@ void UI::PrepNextFrame(float _delta, float _total_time)
 	ImGui::SliderInt("Sample Level", &local_settings.sample_level, 2, 8);
 	ImGui::End();
 
-	ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiSetCond_FirstUseEver);
-	ImGui::Begin("Example settings");
-
-	ImGui::Text("Some Variables");
-	ImGui::DragFloat("x", &UIDemoUBOData.x, 2.0f * _delta);
-	ImGui::SliderFloat("y", &UIDemoUBOData.y, 0.0f, 100.0f);
-	ImGui::SliderFloat("z", &UIDemoUBOData.z, 0.0f, 100.0f);
-	ImGui::SliderFloat("w", &UIDemoUBOData.w, 0.0f, 100.0f);
-
-	ImGui::End();
-
 	ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
-	ImGui::ShowDemoWindow();
 
 	UpdateSettings();
 
