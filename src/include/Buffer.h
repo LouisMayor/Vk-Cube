@@ -63,7 +63,7 @@ namespace VkRes
 			return m_data;
 		}
 
-		[[nodiscard]] vk::Buffer BufferData() const
+		[[nodiscard]] vk::Buffer& BufferData()
 		{
 			return m_buffer;
 		}

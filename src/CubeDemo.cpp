@@ -1,3 +1,5 @@
+#define TINYOBJLOADER_IMPLEMENTATION
+
 #include "include/CubeDemo.h"
 
 extern VkGen::VkGenerator g_VkGenerator;
@@ -5,6 +7,8 @@ extern Logger             g_Logger;
 
 void VkCubeDemo::Setup()
 {
+	LoadAssets();
+
 	CreateSwapchain();
 	CreateCmdPool();
 	CreateCmdBuffers();
@@ -49,7 +53,8 @@ void VkCubeDemo::Run()
 
 			RecreateSwapchain();
 			m_ui_instance.Destroy(g_VkGenerator.Device());
-			m_ui_instance.Recreate(g_VkGenerator.Device(), m_swapchain.Extent().width, m_swapchain.Extent().height, g_VkGenerator.WindowHdle());
+			m_ui_instance.Recreate(g_VkGenerator.Device(), m_swapchain.Extent().width, m_swapchain.Extent().height,
+			                       g_VkGenerator.WindowHdle());
 			m_ui_instance.LoadResources(g_VkGenerator.Device(), g_VkGenerator.PhysicalDevice(), m_shader_directory, m_command,
 			                            m_render_pass.Pass(), g_VkGenerator.GraphicsQueue(), msaa ?
 				                                                                                 Settings::Instance()->
@@ -67,6 +72,11 @@ void VkCubeDemo::Run()
 void VkCubeDemo::Shutdown()
 {
 	g_VkGenerator.Device().waitIdle();
+
+	for(auto &i : m_render_list)
+	{
+		i.Destroy(g_VkGenerator.Device());
+	}
 
 	m_ui_instance.Destroy(g_VkGenerator.Device());
 
@@ -95,9 +105,9 @@ void VkCubeDemo::Shutdown()
 }
 
 VkBool32 VkCubeDemo::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT      _message_severity,
-                                    VkDebugUtilsMessageTypeFlagsEXT             _message_type,
-                                    const VkDebugUtilsMessengerCallbackDataEXT* _p_callback_data,
-                                    void*                                       _p_user_data)
+                                   VkDebugUtilsMessageTypeFlagsEXT             _message_type,
+                                   const VkDebugUtilsMessengerCallbackDataEXT* _p_callback_data,
+                                   void*                                       _p_user_data)
 {
 	std::string message = "validation layer: ";
 	if (_message_severity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
@@ -113,6 +123,15 @@ VkBool32 VkCubeDemo::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT      _
 		g_Logger.Info(message + _p_callback_data->pMessage);
 	}
 	return VK_FALSE;
+}
+
+void VkCubeDemo::LoadAssets()
+{
+	Model cube;
+	cube.SetTextureSupport<ERenderType::ShaderBased>();
+	cube.LoadMesh(g_VkGenerator.Device(), g_VkGenerator.PhysicalDevice(), m_model_directory, "cube.obj");
+
+	m_render_list.emplace_back(cube);
 }
 
 void VkCubeDemo::SubmitQueue()

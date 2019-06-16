@@ -45,6 +45,8 @@ public:
 	void virtual Shutdown() = 0;
 
 private:
+	void virtual LoadAssets() = 0;
+
 	void virtual SubmitQueue() = 0;
 
 	void virtual CreateSyncObjects() = 0;

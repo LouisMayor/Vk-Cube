@@ -3,6 +3,7 @@
 #include "Demo.h"
 #include "Settings.h"
 #include "UI.h"
+#include "Model.h"
 
 class VkCubeDemo : public VkDemo
 {
@@ -36,6 +37,8 @@ public:
 	                                                    void*                                       _p_user_data);
 
 private:
+
+	void LoadAssets() override;
 
 	void SubmitQueue() override;
 
@@ -76,6 +79,8 @@ private:
 	std::vector<VkRes::Fence>       m_inflight_fences;
 	std::vector<VkRes::Semaphore>   m_image_available_semaphores;
 	std::vector<VkRes::Semaphore>   m_render_finished_semaphores;
+
+	std::vector<Model> m_render_list;
 
 	UI m_ui_instance;
 
