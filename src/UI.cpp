@@ -229,8 +229,8 @@ void UI::LoadResources(vk::Device              _device,
 	};
 
 	m_pipeline.SetInputAssembler(&binding_desc, attri_desc, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
-	m_pipeline.SetViewport({static_cast<uint32_t>(m_width), static_cast<uint32_t>(m_height)}, 0.0f, 1.0f);
-	m_pipeline.SetRasterizer(VK_TRUE, VK_TRUE, vk::CompareOp::eLess, _samples, VK_FALSE);
+	m_pipeline.SetViewport({static_cast<uint32_t>(m_width), static_cast<uint32_t>(m_height)}, 0.0f, 0.0f);
+	m_pipeline.SetRasterizer(VK_FALSE, VK_FALSE, vk::CompareOp::eAlways, _samples, VK_FALSE);
 	m_pipeline.SetShaders(stages);
 	m_pipeline.SetPushConstants<UIPushConstantData>(0, vk::ShaderStageFlagBits::eVertex);
 	m_pipeline.CreatePipelineLayout(_device, &m_desc_set_layout, 1, 1);

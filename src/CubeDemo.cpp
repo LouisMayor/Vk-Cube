@@ -97,6 +97,7 @@ void VkCubeDemo::Shutdown()
 	}
 
 	m_render_pass.Destroy(g_VkGenerator.Device());
+	m_depth_buffer.Destroy(g_VkGenerator.Device());
 	m_backbuffer.Destroy(g_VkGenerator.Device());
 	m_command.Destroy(g_VkGenerator.Device());
 	m_swapchain.Destroy(g_VkGenerator.Device());
@@ -230,10 +231,11 @@ void VkCubeDemo::RecordCmdBuffer()
 		nullptr
 	};
 
-	std::array<vk::ClearValue, 2> clear_values = {};
+	std::array<vk::ClearValue, 3> clear_values = {};
 	clear_values[0].color.setFloat32({0.0f, 0.0f, 0.0f, 1.0f});
-	clear_values[1].depthStencil.setDepth(1.0f);
-	clear_values[1].depthStencil.setStencil(0);
+	clear_values[1].color.setFloat32({ 0.0f, 0.0f, 0.0f, 1.0f });
+	clear_values[2].depthStencil.setDepth(1.0f);
+	clear_values[2].depthStencil.setStencil(0);
 
 	m_ui_instance.PrepNextFrame(m_frame_delta, m_total_time);
 	m_ui_instance.Update(g_VkGenerator.Device(), g_VkGenerator.PhysicalDevice());
@@ -247,7 +249,7 @@ void VkCubeDemo::RecordCmdBuffer()
 			m_render_pass.Pass(),
 			m_framebuffers[buffer_index].Buffer(),
 			vk::Rect2D{vk::Offset2D{0, 0}, m_swapchain.Extent()},
-			2,
+			3,
 			clear_values.data()
 		};
 
@@ -291,30 +293,31 @@ void VkCubeDemo::CreateRenderPasses()
 	{
 		0,
 		vk::ImageLayout::eColorAttachmentOptimal
+	};	
+
+	vk::AttachmentReference colour_resolve_attachment =
+	{
+		1,
+		vk::ImageLayout::eColorAttachmentOptimal
 	};
 
 	vk::AttachmentReference depth_attachment =
 	{
-		1,
+		Settings::Instance()->use_msaa ? 2u : 1u,
 		vk::ImageLayout::eDepthStencilAttachmentOptimal
-	};
-
-	vk::AttachmentReference colour_resolve_attachment =
-	{
-		2,
-		vk::ImageLayout::eColorAttachmentOptimal
 	};
 
 	std::vector<vk::AttachmentDescription> attachments =
 	{
 		m_backbuffer.GetAttachmentDesc(),
-		m_depth_buffer.GetAttachmentDesc()
 	};
 
 	if (Settings::Instance()->use_msaa)
 	{
 		attachments.emplace_back(m_backbuffer.GetResolveAttachmentDesc());
 	}
+
+	attachments.emplace_back(m_depth_buffer.GetAttachmentDesc());
 
 	m_render_pass = VkRes::RenderPass(attachments,
 	                                  &colour_attachment, 1,
@@ -332,7 +335,7 @@ void VkCubeDemo::CreateFrameBuffers()
 
 	for (uint32_t i = 0 ; i < image_views.size() ; ++i)
 	{
-		std::vector<vk::ImageView> attachments;
+		std::vector<vk::ImageView> attachments;		
 
 		if (Settings::Instance()->use_msaa && Settings::Instance()->GetSampleCount() > vk::SampleCountFlagBits::e1)
 		{
@@ -382,7 +385,7 @@ void VkCubeDemo::CreatePipelines()
 
 	m_graphics_pipeline.SetInputAssembler(nullptr, {}, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
 	m_graphics_pipeline.SetViewport(m_swapchain.Extent(), 0.0f, 1.0f);
-	m_graphics_pipeline.SetRasterizer(VK_TRUE, VK_TRUE, vk::CompareOp::eLess, samples, VK_FALSE);
+	m_graphics_pipeline.SetRasterizer(VK_FALSE, VK_FALSE, vk::CompareOp::eAlways, samples, VK_FALSE);
 	m_graphics_pipeline.SetShaders(stages);
 	m_graphics_pipeline.CreatePipelineLayout(g_VkGenerator.Device(), nullptr, 0, 0);
 	m_graphics_pipeline.CreateGraphicPipeline(g_VkGenerator.Device(), m_render_pass.Pass());
@@ -408,11 +411,16 @@ void VkCubeDemo::CreateColourResources()
 
 void VkCubeDemo::CreateDepthResources()
 {
+	const bool                    msaa    = Settings::Instance()->use_msaa;
+	const vk::SampleCountFlagBits samples = msaa ?
+		                                        Settings::Instance()->GetSampleCount() :
+		                                        vk::SampleCountFlagBits::e1;
+
 	m_depth_buffer = VkRes::DepthBuffer(g_VkGenerator.PhysicalDevice(),
 	                                    g_VkGenerator.Device(),
 	                                    m_swapchain.Extent().width,
 	                                    m_swapchain.Extent().height,
-	                                    vk::SampleCountFlagBits::e1,
+	                                    samples,
 	                                    vk::ImageTiling::eOptimal,
 	                                    m_command,
 	                                    g_VkGenerator.GraphicsQueue());
