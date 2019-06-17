@@ -193,6 +193,7 @@
     <ClInclude Include="..\src\include\Swapchain.h" />
     <ClInclude Include="..\src\include\Texture.h" />
     <ClInclude Include="..\src\include\UI.h" />
+    <ClInclude Include="..\src\include\UniformBuffer.h" />
     <ClInclude Include="..\src\include\Vertex.h" />
     <ClInclude Include="..\src\include\Vk-Generator\VkGenerator.hpp" />
     <ClInclude Include="..\src\include\Vk-Generator\VkGenerator.ipp" />

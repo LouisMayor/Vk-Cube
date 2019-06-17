@@ -265,4 +265,22 @@ namespace VkRes
 
 		return std::make_tuple(buffer, memory);
 	}
+
+	[[nodiscard]] static vk::DescriptorSetLayoutBinding CreateDescriptorSetLayout(const vk::DescriptorType   _type,
+	                                                                              const vk::ShaderStageFlags _stage_flags,
+	                                                                              const int                  _dst_binding)
+	{
+		vk::DescriptorSetLayoutBinding desc_set_layout_binding;
+		return desc_set_layout_binding;
+	}
+
+	[[nodiscard]] static vk::WriteDescriptorSet CreateDescriptorSet(const vk::DescriptorSet         _desc_set,
+	                                                                const vk::DescriptorType        _desc_type,
+	                                                                const vk::DescriptorBufferInfo* _buffer_info,
+	                                                                const vk::DescriptorImageInfo*  _desc_image_info,
+	                                                                const int                       _dst_binding)
+	{
+		vk::WriteDescriptorSet desc_set;
+		return desc_set;
+	}
 }

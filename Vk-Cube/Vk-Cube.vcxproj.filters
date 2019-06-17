@@ -160,6 +160,9 @@
     <ClInclude Include="..\src\include\DepthBuffer.h">
       <Filter>Header Files\Vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\include\UniformBuffer.h">
+      <Filter>Header Files\Vulkan</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\assets\shaders\triangle_no_mesh.frag">
