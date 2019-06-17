@@ -340,6 +340,7 @@ void VkCubeDemo::CreateFrameBuffers()
 		}
 
 		attachments.push_back(image_views[i]);
+		attachments.push_back(m_depth_buffer.ImageView());
 
 		m_framebuffers[i] = VkRes::FrameBuffer(g_VkGenerator.Device(), attachments,
 		                                       m_render_pass.Pass(), m_swapchain.Extent(),
