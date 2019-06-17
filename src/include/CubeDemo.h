@@ -70,6 +70,7 @@ private:
 
 	VkRes::Swapchain                m_swapchain;
 	VkRes::Command                  m_command;
+	VkRes::DepthBuffer              m_depth_buffer;
 	VkRes::RenderTarget             m_backbuffer;
 	VkRes::RenderPass               m_render_pass;
 	std::vector<VkRes::FrameBuffer> m_framebuffers;

@@ -95,6 +95,8 @@ namespace VkRes
 		vk::DeviceMemory image_memory;
 		auto             mem_result = _device.allocateMemory(&allocate_info, nullptr, &image_memory);
 
+		assert(("Failed to allocate memory", mem_result == vk::Result::eSuccess));
+
 		_device.bindImageMemory(image, image_memory, 0);
 
 		return std::make_tuple(image, image_memory);
@@ -103,6 +105,29 @@ namespace VkRes
 	[[nodiscard]] static bool HasStencilComponent(vk::Format _format)
 	{
 		return _format == vk::Format::eD32SfloatS8Uint || _format == vk::Format::eD24UnormS8Uint;
+	}
+
+	static vk::Format FindSupportedFormat(vk::PhysicalDevice             _physical_device,
+	                                      const std::vector<vk::Format>& _candidates,
+	                                      vk::ImageTiling                _tiling,
+	                                      vk::FormatFeatureFlags         _feature_flags)
+	{
+		for (vk::Format format : _candidates)
+		{
+			const vk::FormatProperties properties = _physical_device.getFormatProperties(format);
+
+			if (_tiling == vk::ImageTiling::eLinear && (properties.linearTilingFeatures & _feature_flags) == _feature_flags)
+			{
+				return format;
+			}
+
+			if (_tiling == vk::ImageTiling::eOptimal && (properties.optimalTilingFeatures & _feature_flags) == _feature_flags)
+			{
+				return format;
+			}
+		}
+
+		throw std::runtime_error("failed to find supported format!");
 	}
 
 	static void TransitionImageLayout(vk::CommandBuffer _cmd_buffer,

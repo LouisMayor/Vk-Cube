@@ -13,7 +13,7 @@ void VkCubeDemo::Setup()
 	CreateCmdPool();
 	CreateCmdBuffers();
 	CreateColourResources();
-	CreateDepthResources(); // Not created for this program
+	CreateDepthResources();
 	CreateRenderPasses();
 	CreateFrameBuffers();
 	CreateShaders();
@@ -73,7 +73,7 @@ void VkCubeDemo::Shutdown()
 {
 	g_VkGenerator.Device().waitIdle();
 
-	for(auto &i : m_render_list)
+	for (auto& i : m_render_list)
 	{
 		i.Destroy(g_VkGenerator.Device());
 	}
@@ -293,15 +293,22 @@ void VkCubeDemo::CreateRenderPasses()
 		vk::ImageLayout::eColorAttachmentOptimal
 	};
 
-	vk::AttachmentReference colour_resolve_attachment =
+	vk::AttachmentReference depth_attachment =
 	{
 		1,
+		vk::ImageLayout::eDepthStencilAttachmentOptimal
+	};
+
+	vk::AttachmentReference colour_resolve_attachment =
+	{
+		2,
 		vk::ImageLayout::eColorAttachmentOptimal
 	};
 
 	std::vector<vk::AttachmentDescription> attachments =
 	{
-		m_backbuffer.GetAttachmentDesc()
+		m_backbuffer.GetAttachmentDesc(),
+		m_depth_buffer.GetAttachmentDesc()
 	};
 
 	if (Settings::Instance()->use_msaa)
@@ -311,7 +318,7 @@ void VkCubeDemo::CreateRenderPasses()
 
 	m_render_pass = VkRes::RenderPass(attachments,
 	                                  &colour_attachment, 1,
-	                                  nullptr,
+	                                  &depth_attachment,
 	                                  Settings::Instance()->use_msaa ?
 		                                  &colour_resolve_attachment :
 		                                  nullptr, 1,
@@ -399,7 +406,16 @@ void VkCubeDemo::CreateColourResources()
 }
 
 void VkCubeDemo::CreateDepthResources()
-{}
+{
+	m_depth_buffer = VkRes::DepthBuffer(g_VkGenerator.PhysicalDevice(),
+	                                    g_VkGenerator.Device(),
+	                                    m_swapchain.Extent().width,
+	                                    m_swapchain.Extent().height,
+	                                    vk::SampleCountFlagBits::e1,
+	                                    vk::ImageTiling::eOptimal,
+	                                    m_command,
+	                                    g_VkGenerator.GraphicsQueue());
+}
 
 void VkCubeDemo::CleanSwapchain()
 {
@@ -408,6 +424,7 @@ void VkCubeDemo::CleanSwapchain()
 	device.waitIdle();
 
 	m_backbuffer.Destroy(device);
+	m_depth_buffer.Destroy(device);
 	m_command.FreeCommandBuffers(device);
 	m_graphics_pipeline.Destroy(device);
 	m_render_pass.Destroy(device);
@@ -434,7 +451,7 @@ void VkCubeDemo::RecreateSwapchain()
 	CreateSwapchain();
 	CreateCmdBuffers();
 	CreateColourResources();
-	CreateDepthResources(); // Not created for this program
+	CreateDepthResources();
 	CreateRenderPasses();
 	CreateFrameBuffers();
 	CreatePipelines();

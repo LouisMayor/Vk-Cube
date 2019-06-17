@@ -12,3 +12,4 @@
 #include "Buffer.h"
 #include "Sampler.h"
 #include "Texture.h"
+#include "DepthBuffer.h"
