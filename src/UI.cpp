@@ -72,40 +72,7 @@ void UI::Init(uint32_t _width, uint32_t _height, GLFWwindow* _window)
 	style.Colors[ImGuiCol_CheckMark]     = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
 
 	ImGuiIO& io = ImGui::GetIO();
-	io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
-	io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
-	io.ClipboardUserData       = _window;
-	io.DisplaySize             = ImVec2(m_width, m_height);
-	io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
-	io.WantCaptureMouse        = true;
-	io.WantSetMousePos         = true;
-	io.MouseDrawCursor         = true;
-	io.WantCaptureKeyboard     = true;
-	io.WantTextInput           = true;
-	io.WantSaveIniSettings     = false;
-	io.IniFilename             = "imgui.ini";
-
-	io.KeyMap[ImGuiKey_Tab]        = GLFW_KEY_TAB;
-	io.KeyMap[ImGuiKey_LeftArrow]  = GLFW_KEY_LEFT;
-	io.KeyMap[ImGuiKey_RightArrow] = GLFW_KEY_RIGHT;
-	io.KeyMap[ImGuiKey_UpArrow]    = GLFW_KEY_UP;
-	io.KeyMap[ImGuiKey_DownArrow]  = GLFW_KEY_DOWN;
-	io.KeyMap[ImGuiKey_PageUp]     = GLFW_KEY_PAGE_UP;
-	io.KeyMap[ImGuiKey_PageDown]   = GLFW_KEY_PAGE_DOWN;
-	io.KeyMap[ImGuiKey_Home]       = GLFW_KEY_HOME;
-	io.KeyMap[ImGuiKey_End]        = GLFW_KEY_END;
-	io.KeyMap[ImGuiKey_Insert]     = GLFW_KEY_INSERT;
-	io.KeyMap[ImGuiKey_Delete]     = GLFW_KEY_DELETE;
-	io.KeyMap[ImGuiKey_Backspace]  = GLFW_KEY_BACKSPACE;
-	io.KeyMap[ImGuiKey_Space]      = GLFW_KEY_SPACE;
-	io.KeyMap[ImGuiKey_Enter]      = GLFW_KEY_ENTER;
-	io.KeyMap[ImGuiKey_Escape]     = GLFW_KEY_ESCAPE;
-	io.KeyMap[ImGuiKey_A]          = GLFW_KEY_A;
-	io.KeyMap[ImGuiKey_C]          = GLFW_KEY_C;
-	io.KeyMap[ImGuiKey_V]          = GLFW_KEY_V;
-	io.KeyMap[ImGuiKey_X]          = GLFW_KEY_X;
-	io.KeyMap[ImGuiKey_Y]          = GLFW_KEY_Y;
-	io.KeyMap[ImGuiKey_Z]          = GLFW_KEY_Z;
+	io.DisplaySize = ImVec2(m_width, m_height);
 }
 
 void UI::LoadResources(vk::Device              _device,
