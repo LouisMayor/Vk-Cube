@@ -385,7 +385,7 @@ void VkCubeDemo::CreatePipelines()
 
 	m_graphics_pipeline.SetInputAssembler(nullptr, {}, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
 	m_graphics_pipeline.SetViewport(m_swapchain.Extent(), 0.0f, 1.0f);
-	m_graphics_pipeline.SetRasterizer(VK_FALSE, VK_FALSE, vk::CompareOp::eAlways, samples, VK_FALSE);
+	m_graphics_pipeline.SetRasterizer(VK_FALSE, VK_FALSE, vk::CompareOp::eNever, samples, VK_FALSE);
 	m_graphics_pipeline.SetShaders(stages);
 	m_graphics_pipeline.CreatePipelineLayout(g_VkGenerator.Device(), nullptr, 0, 0);
 	m_graphics_pipeline.CreateGraphicPipeline(g_VkGenerator.Device(), m_render_pass.Pass());
