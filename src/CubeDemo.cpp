@@ -1,6 +1,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 
 #include "include/CubeDemo.h"
+#include <chrono>
 
 extern VkGen::VkGenerator g_VkGenerator;
 extern Logger             g_Logger;
@@ -19,6 +20,7 @@ void VkCubeDemo::Setup()
 	CreateShaders();
 	CreatePipelines();
 	CreateSyncObjects();
+	CreateResources();
 
 	const bool msaa = Settings::Instance()->use_msaa;
 
@@ -72,6 +74,8 @@ void VkCubeDemo::Run()
 void VkCubeDemo::Shutdown()
 {
 	g_VkGenerator.Device().waitIdle();
+
+	m_cube_ubo.Destroy(g_VkGenerator.Device());
 
 	for (auto& i : m_render_list)
 	{
@@ -161,6 +165,8 @@ void VkCubeDemo::SubmitQueue()
 		return;
 	}
 
+	// UpdateBufferData(image_index); // not using yet
+
 	const auto command_buffer = m_command.CommandBuffer(image_index);
 
 	vk::PipelineStageFlags waitStages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
@@ -233,7 +239,7 @@ void VkCubeDemo::RecordCmdBuffer()
 
 	std::array<vk::ClearValue, 3> clear_values = {};
 	clear_values[0].color.setFloat32({0.0f, 0.0f, 0.0f, 1.0f});
-	clear_values[1].color.setFloat32({ 0.0f, 0.0f, 0.0f, 1.0f });
+	clear_values[1].color.setFloat32({0.0f, 0.0f, 0.0f, 1.0f});
 	clear_values[2].depthStencil.setDepth(1.0f);
 	clear_values[2].depthStencil.setStencil(0);
 
@@ -293,7 +299,7 @@ void VkCubeDemo::CreateRenderPasses()
 	{
 		0,
 		vk::ImageLayout::eColorAttachmentOptimal
-	};	
+	};
 
 	vk::AttachmentReference colour_resolve_attachment =
 	{
@@ -303,7 +309,9 @@ void VkCubeDemo::CreateRenderPasses()
 
 	vk::AttachmentReference depth_attachment =
 	{
-		Settings::Instance()->use_msaa ? 2u : 1u,
+		Settings::Instance()->use_msaa ?
+			2u :
+			1u,
 		vk::ImageLayout::eDepthStencilAttachmentOptimal
 	};
 
@@ -335,7 +343,7 @@ void VkCubeDemo::CreateFrameBuffers()
 
 	for (uint32_t i = 0 ; i < image_views.size() ; ++i)
 	{
-		std::vector<vk::ImageView> attachments;		
+		std::vector<vk::ImageView> attachments;
 
 		if (Settings::Instance()->use_msaa && Settings::Instance()->GetSampleCount() > vk::SampleCountFlagBits::e1)
 		{
@@ -385,7 +393,7 @@ void VkCubeDemo::CreatePipelines()
 
 	m_graphics_pipeline.SetInputAssembler(nullptr, {}, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
 	m_graphics_pipeline.SetViewport(m_swapchain.Extent(), 0.0f, 1.0f);
-	m_graphics_pipeline.SetRasterizer(VK_FALSE, VK_FALSE, vk::CompareOp::eNever, samples, VK_FALSE);
+	m_graphics_pipeline.SetRasterizer(VK_FALSE, VK_FALSE, vk::CompareOp::eNever, samples, VK_FALSE, VK_FALSE);
 	m_graphics_pipeline.SetShaders(stages);
 	m_graphics_pipeline.CreatePipelineLayout(g_VkGenerator.Device(), nullptr, 0, 0);
 	m_graphics_pipeline.CreateGraphicPipeline(g_VkGenerator.Device(), m_render_pass.Pass());
@@ -464,4 +472,39 @@ void VkCubeDemo::RecreateSwapchain()
 	CreateRenderPasses();
 	CreateFrameBuffers();
 	CreatePipelines();
+}
+
+void VkCubeDemo::CreateDescriptorLayouts()
+{}
+
+void VkCubeDemo::CreateDescriptorPools()
+{}
+
+void VkCubeDemo::CreateDescriptorSets()
+{}
+
+void VkCubeDemo::CreateResources()
+{
+	m_cube_ubo = VkRes::UniformBuffer<CubeData>(g_VkGenerator.Device(), g_VkGenerator.PhysicalDevice(),
+	                                            m_swapchain.ImageViews().size(), false);
+}
+
+void VkCubeDemo::UpdateBufferData(uint32_t _image_index)
+{
+	static auto start_time = std::chrono::high_resolution_clock::now();
+
+	auto current_time = std::chrono::high_resolution_clock::now();
+	auto time         = std::chrono::duration<float, std::chrono::seconds::period>(current_time - start_time).count();
+	auto dims         = m_swapchain.Extent();
+
+	auto mvp = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)) *
+			glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+	auto proj = glm::perspective(glm::radians(45.0f), (float)dims.width / (float)dims.height, 0.1f, 10.0f);
+	proj[1][1] *= -1;
+
+	mvp *= proj;
+
+	m_cube_ubo.Get().mvp = mvp;
+	m_cube_ubo.Map(g_VkGenerator.Device(), _image_index);
 }

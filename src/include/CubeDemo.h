@@ -38,6 +38,16 @@ public:
 
 private:
 
+	void CreateDescriptorLayouts() override;
+
+	void CreateDescriptorPools() override;
+
+	void CreateDescriptorSets() override;
+
+	void CreateResources() override;
+
+	void UpdateBufferData(uint32_t) override;
+
 	void LoadAssets() override;
 
 	void SubmitQueue() override;
@@ -68,6 +78,11 @@ private:
 
 	void CreateCmdBuffers() override;
 
+	struct CubeData
+	{
+		glm::mat4x4 mvp;
+	};
+
 	VkRes::Swapchain                m_swapchain;
 	VkRes::Command                  m_command;
 	VkRes::DepthBuffer              m_depth_buffer;
@@ -81,7 +96,8 @@ private:
 	std::vector<VkRes::Semaphore>   m_image_available_semaphores;
 	std::vector<VkRes::Semaphore>   m_render_finished_semaphores;
 
-	std::vector<Model> m_render_list;
+	VkRes::UniformBuffer<CubeData> m_cube_ubo;
+	std::vector<Model>             m_render_list;
 
 	UI m_ui_instance;
 

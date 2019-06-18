@@ -8,9 +8,7 @@ namespace VkRes
 
 		UniformBuffer() = default;
 
-		~UniformBuffer() = default;
-
-		UniformBuffer(uint32_t num_of_buffers = 1, bool dynamic = false) : m_dynamic(dynamic)
+		UniformBuffer(vk::Device _device, vk::PhysicalDevice _physical_device, uint32_t num_of_buffers = 1, bool dynamic = false) : m_dynamic(dynamic)
 		{
 			assert(("invalid number of buffers"), num_of_buffers > 0);
 
@@ -20,6 +18,11 @@ namespace VkRes
 
 			m_buffer_size = sizeof(Data);
 			m_buffers.resize(num_of_buffers);
+
+			for (auto &buffer : m_buffers)
+			{
+				std::get<0>(buffer) = VkRes::Buffer(_device, _physical_device, m_buffer_size, vk::BufferUsageFlagBits::eUniformBuffer);
+			}
 		}
 
 		void Destroy(vk::Device _device)

@@ -45,6 +45,16 @@ public:
 	void virtual Shutdown() = 0;
 
 private:
+	void virtual CreateDescriptorLayouts() = 0;
+
+	void virtual CreateDescriptorPools() = 0;
+
+	void virtual CreateDescriptorSets() = 0;
+
+	void virtual CreateResources() = 0;
+
+	void virtual UpdateBufferData(uint32_t) = 0;
+
 	void virtual LoadAssets() = 0;
 
 	void virtual SubmitQueue() = 0;
