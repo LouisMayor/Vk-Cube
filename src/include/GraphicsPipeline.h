@@ -92,7 +92,8 @@ namespace VkRes
 		                   vk::Bool32              _depth_test,
 		                   vk::CompareOp           _depth_comp_op,
 		                   vk::SampleCountFlagBits _multisampling_count,
-		                   vk::Bool32              _sample_shading)
+		                   vk::Bool32              _sample_shading,
+		                   vk::Bool32              _transparent)
 		{
 			m_rasterization_state_create_info = vk::PipelineRasterizationStateCreateInfo
 			{
@@ -100,8 +101,8 @@ namespace VkRes
 				VK_FALSE,
 				VK_FALSE,
 				vk::PolygonMode::eFill,
-				vk::CullModeFlagBits::eNone, // test - eBack
-				vk::FrontFace::eClockwise, // test eClockwise
+				_transparent ? vk::CullModeFlagBits::eNone : vk::CullModeFlagBits::eBack,
+				vk::FrontFace::eClockwise,
 				VK_FALSE,
 				0.0f,
 				0.0f,
@@ -224,7 +225,7 @@ namespace VkRes
 				vk::DynamicState::eScissor
 			};
 			dynamic_state.dynamicStateCount = states.size();
-			dynamic_state.pDynamicStates = states.data();
+			dynamic_state.pDynamicStates    = states.data();
 
 			m_graphics_pipeline_create_info = vk::GraphicsPipelineCreateInfo
 			{
