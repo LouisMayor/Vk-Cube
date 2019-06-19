@@ -65,13 +65,6 @@ namespace VkRes
 			return result;
 		}
 
-		MaskType operator|(Flags<BitType> const& rhs) const
-		{
-			MaskType result(*this);
-			result |= rhs;
-			return result;
-		}
-
 		Flags<BitType> operator&(Flags<BitType> const& rhs) const
 		{
 			Flags<BitType> result(*this);
