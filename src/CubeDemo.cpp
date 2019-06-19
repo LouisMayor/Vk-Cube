@@ -485,8 +485,9 @@ void VkCubeDemo::CreateDescriptorSets()
 
 void VkCubeDemo::CreateResources()
 {
-	m_cube_ubo = VkRes::UniformBuffer<CubeData, VkRes::EDataUsageFlags::OnResize | VkRes::EDataUsageFlags::PerFrame>(g_VkGenerator.Device(), g_VkGenerator.PhysicalDevice(),
-	                                            m_swapchain.ImageViews().size(), false);
+	m_cube_ubo = VkRes::UniformBuffer<CubeData, VkRes::EDataUsageFlags::PerFrame>
+	(g_VkGenerator.Device(), g_VkGenerator.PhysicalDevice(),
+	 m_swapchain.ImageViews().size(), false);
 }
 
 void VkCubeDemo::UpdateBufferData(uint32_t _image_index)
@@ -496,11 +497,11 @@ void VkCubeDemo::UpdateBufferData(uint32_t _image_index)
 		static auto start_time = std::chrono::high_resolution_clock::now();
 
 		auto current_time = std::chrono::high_resolution_clock::now();
-		auto time = std::chrono::duration<float, std::chrono::seconds::period>(current_time - start_time).count();
-		auto dims = m_swapchain.Extent();
+		auto time         = std::chrono::duration<float, std::chrono::seconds::period>(current_time - start_time).count();
+		auto dims         = m_swapchain.Extent();
 
 		auto mvp = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)) *
-			glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+				glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		auto proj = glm::perspective(glm::radians(45.0f), (float)dims.width / (float)dims.height, 0.1f, 10.0f);
 		proj[1][1] *= -1;
@@ -509,5 +510,5 @@ void VkCubeDemo::UpdateBufferData(uint32_t _image_index)
 
 		m_cube_ubo.Get().mvp = mvp;
 		m_cube_ubo.Map(g_VkGenerator.Device(), _image_index);
-	}	
+	}
 }

@@ -1,8 +1,15 @@
 #pragma once
 #include <cstdint>
 
+// Taken from Vulkan.hpp
+
 namespace VkRes
 {
+	template <typename FlagBitsType> struct FlagTraits
+	{
+		enum { allFlags = 0 };
+	};
+
 	template <typename BitType, typename MaskType = uint32_t>
 	class Flags
 	{
@@ -54,6 +61,13 @@ namespace VkRes
 		Flags<BitType> operator|(Flags<BitType> const& rhs) const
 		{
 			Flags<BitType> result(*this);
+			result |= rhs;
+			return result;
+		}
+
+		MaskType operator|(Flags<BitType> const& rhs) const
+		{
+			MaskType result(*this);
 			result |= rhs;
 			return result;
 		}

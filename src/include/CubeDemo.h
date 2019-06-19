@@ -96,7 +96,7 @@ private:
 	std::vector<VkRes::Semaphore>   m_image_available_semaphores;
 	std::vector<VkRes::Semaphore>   m_render_finished_semaphores;
 
-	VkRes::UniformBuffer<CubeData, VkRes::EDataUsageFlags::OnResize | VkRes::EDataUsageFlags::PerFrame> m_cube_ubo;
+	VkRes::UniformBuffer<CubeData, VkRes::EDataUsageFlags::PerFrame> m_cube_ubo;
 	std::vector<Model>             m_render_list;
 
 	UI m_ui_instance;
