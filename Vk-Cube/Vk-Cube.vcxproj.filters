@@ -163,6 +163,9 @@
     <ClInclude Include="..\src\include\UniformBuffer.h">
       <Filter>Header Files\Vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Louis%27 Documents\gitrepos\Vk-Cube\src\include\Flags.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\assets\shaders\triangle_no_mesh.frag">

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Logger.h"
+#include "Flags.h"
 
 extern Logger g_Logger;
 
@@ -8,6 +9,19 @@ extern Logger g_Logger;
 
 namespace VkRes
 {
+	enum EDataUsageFlags : int
+	{
+		PerFrame = 1 << 1,
+		OnResize = 1 << 2
+	};
+
+	constexpr EDataUsageFlags operator|(EDataUsageFlags a, EDataUsageFlags b)
+	{
+		return static_cast<EDataUsageFlags>(static_cast<int>(a) | static_cast<int>(b));
+	}
+
+	//using BufferUsageFlags = Flags<EDataUsageFlags, uint32_t>;
+
 	[[nodiscard]] static vk::ImageView CreateImageView(vk::Device _device, vk::Image            _image,
 	                                                   vk::Format _format, vk::ImageAspectFlags _aspect_flags,
 	                                                   uint32_t   _mips_level)

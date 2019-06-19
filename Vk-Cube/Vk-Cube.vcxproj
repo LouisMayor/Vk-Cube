@@ -165,6 +165,7 @@
     <ClCompile Include="..\src\UI.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\Louis%27 Documents\gitrepos\Vk-Cube\src\include\Flags.h" />
     <ClInclude Include="..\src\include\App.h" />
     <ClInclude Include="..\src\include\Buffer.h" />
     <ClInclude Include="..\src\include\Command.h" />

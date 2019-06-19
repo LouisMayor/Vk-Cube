@@ -2,7 +2,7 @@
 
 namespace VkRes
 {
-	template <typename Data> class UniformBuffer
+	template <typename Data, EDataUsageFlags UsageFlags> class UniformBuffer
 	{
 	public:
 
@@ -65,6 +65,16 @@ namespace VkRes
 			buffer.Map(_device);
 			std::memcpy(buffer.Data(), &Get(_buffer_index), TotalBufferSize());
 			buffer.Unmap(_device);
+		}
+
+		[[nodiscard]] bool WantsPerFrameUpdate() const
+		{
+			return UsageFlags & EDataUsageFlags::PerFrame;
+		}
+
+		[[nodiscard]] bool WantsOnResizeUpdate() const
+		{
+			return UsageFlags & EDataUsageFlags::OnResize;
 		}
 
 		[[nodiscard]] uint32_t BufferCount() const

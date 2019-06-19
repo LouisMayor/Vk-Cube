@@ -14,3 +14,4 @@
 #include "Texture.h"
 #include "DepthBuffer.h"
 #include "UniformBuffer.h"
+#include "Flags.h"
