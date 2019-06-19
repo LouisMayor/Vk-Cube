@@ -475,13 +475,32 @@ void VkCubeDemo::RecreateSwapchain()
 }
 
 void VkCubeDemo::CreateDescriptorLayouts()
-{}
+{
+	// Add bindings
+	// m_desc_set_layouts.Add()
+
+	// m_desc_set_layouts.CreateLayouts(g_VkGenerator.Device());
+}
 
 void VkCubeDemo::CreateDescriptorPools()
-{}
+{
+	// Add descriptions
+	// m_desc_pool.Add()
+
+	// m_desc_pool.CreatePool(g_VkGenerator.Device(), m_swapchain.ImageViews().size());
+}
 
 void VkCubeDemo::CreateDescriptorSets()
-{}
+{
+	//m_desc_sets = VkRes::DescriptorSet(g_VkGenerator.Device(),
+	//                                   m_swapchain.ImageViews().size(),
+	//                                   m_desc_pool.Get(),
+	//                                   m_desc_set_layouts.Get());
+
+	// Create desciptor sets here
+
+	// m_cube_ubo.CreateDescriptorSet()
+}
 
 void VkCubeDemo::CreateResources()
 {

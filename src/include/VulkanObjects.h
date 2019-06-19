@@ -21,7 +21,7 @@ namespace VkRes
 		return static_cast<EDataUsageFlags>(static_cast<int>(a) | static_cast<int>(b));
 	}
 
-	using BufferUsageFlags = Flags<EDataUsageFlags, uint32_t>;
+	using BufferUsageFlags = Flags<EDataUsageFlags, UINT8>;
 }
 
 #include "Swapchain.h"
@@ -38,3 +38,6 @@ namespace VkRes
 #include "Texture.h"
 #include "DepthBuffer.h"
 #include "UniformBuffer.h"
+#include "DescriptorPool.h"
+#include "DescriptorSet.h"
+#include "DescriptorSetLayout.h"

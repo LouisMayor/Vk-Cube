@@ -87,7 +87,7 @@ namespace VkRes
 			return std::get<1>(m_buffers[_buffer_index]);
 		}
 
-		[[nodiscard]] vk::DescriptorSetLayoutBinding& DescLayout()
+		[[nodiscard]] vk::DescriptorSetLayoutBinding& DescLayoutBinding()
 		{
 			return m_descriptor_set_layout_binding;
 		}

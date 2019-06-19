@@ -165,14 +165,17 @@
     <ClCompile Include="..\src\UI.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Louis%27 Documents\gitrepos\Vk-Cube\src\include\Flags.h" />
     <ClInclude Include="..\src\include\App.h" />
     <ClInclude Include="..\src\include\Buffer.h" />
     <ClInclude Include="..\src\include\Command.h" />
     <ClInclude Include="..\src\include\CubeDemo.h" />
     <ClInclude Include="..\src\include\Demo.h" />
     <ClInclude Include="..\src\include\DepthBuffer.h" />
+    <ClInclude Include="..\src\include\DescriptorPool.h" />
+    <ClInclude Include="..\src\include\DescriptorSet.h" />
+    <ClInclude Include="..\src\include\DescriptorSetLayout.h" />
     <ClInclude Include="..\src\include\Fence.h" />
+    <ClInclude Include="..\src\include\Flags.h" />
     <ClInclude Include="..\src\include\FrameBuffer.h" />
     <ClInclude Include="..\src\include\GraphicsPipeline.h" />
     <ClInclude Include="..\src\include\imgui-1.70\imconfig.h" />
