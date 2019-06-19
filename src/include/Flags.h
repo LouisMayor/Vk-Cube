@@ -10,29 +10,20 @@ namespace VkRes
 		enum { allFlags = 0 };
 	};
 
-	template <typename BitType, typename MaskType = uint32_t>
-	class Flags
+	template <typename BitType, typename MaskType = uint32_t> class Flags
 	{
 	public:
-		constexpr Flags()
-			: m_mask(0)
-		{
-		}
+		constexpr Flags() : m_mask(0)
+		{ }
 
-		Flags(BitType bit)
-			: m_mask(static_cast<MaskType>(bit))
-		{
-		}
+		Flags(BitType bit) : m_mask(static_cast<MaskType>(bit))
+		{ }
 
-		Flags(Flags<BitType> const& rhs)
-			: m_mask(rhs.m_mask)
-		{
-		}
+		Flags(Flags<BitType> const& rhs) : m_mask(rhs.m_mask)
+		{ }
 
-		explicit Flags(MaskType flags)
-			: m_mask(flags)
-		{
-		}
+		explicit Flags(MaskType flags) : m_mask(flags)
+		{ }
 
 		Flags<BitType>& operator=(Flags<BitType> const& rhs)
 		{
@@ -112,7 +103,6 @@ namespace VkRes
 		}
 
 	private:
-		MaskType  m_mask;
+		MaskType m_mask;
 	};
-
 }
