@@ -21,6 +21,9 @@ void VkCubeDemo::Setup()
 	CreatePipelines();
 	CreateSyncObjects();
 	CreateResources();
+	CreateDescriptorLayouts();
+	CreateDescriptorPools();
+	CreateDescriptorSets();
 
 	const bool msaa = Settings::Instance()->use_msaa;
 
@@ -476,30 +479,29 @@ void VkCubeDemo::RecreateSwapchain()
 
 void VkCubeDemo::CreateDescriptorLayouts()
 {
-	// Add bindings
-	// m_desc_set_layouts.Add()
+	m_cube_ubo.CreateDescriptorSetLayout(vk::ShaderStageFlagBits::eVertex, 0);
 
-	// m_desc_set_layouts.CreateLayouts(g_VkGenerator.Device());
+	m_desc_set_layouts.Add(m_cube_ubo.DescLayoutBinding());
+	m_desc_set_layouts.CreateLayouts(g_VkGenerator.Device());
 }
 
 void VkCubeDemo::CreateDescriptorPools()
 {
-	// Add descriptions
-	// m_desc_pool.Add()
-
-	// m_desc_pool.CreatePool(g_VkGenerator.Device(), m_swapchain.ImageViews().size());
+	m_desc_pool.Add(m_cube_ubo.DescLayoutBinding().descriptorType, m_cube_ubo.DescLayoutBinding().binding);
+	m_desc_pool.CreatePool(g_VkGenerator.Device(), m_swapchain.ImageViews().size());
 }
 
 void VkCubeDemo::CreateDescriptorSets()
 {
-	//m_desc_sets = VkRes::DescriptorSet(g_VkGenerator.Device(),
-	//                                   m_swapchain.ImageViews().size(),
-	//                                   m_desc_pool.Get(),
-	//                                   m_desc_set_layouts.Get());
+	m_desc_sets = VkRes::DescriptorSet(g_VkGenerator.Device(),
+	                                   m_swapchain.ImageViews().size(),
+	                                   m_desc_pool.Get(),
+	                                   m_desc_set_layouts.Get());
 
-	// Create desciptor sets here
-
-	// m_cube_ubo.CreateDescriptorSet()
+	for(int i = 0; i < m_swapchain.ImageViews().size(); ++i)
+	{
+		m_cube_ubo.CreateDescriptorSet(i, m_desc_sets.Get(i), m_cube_ubo.DescLayoutBinding().binding);
+	}
 }
 
 void VkCubeDemo::CreateResources()
@@ -527,7 +529,7 @@ void VkCubeDemo::UpdateBufferData(uint32_t _image_index)
 
 		mvp *= proj;
 
-		m_cube_ubo.Get().mvp = mvp;
+		m_cube_ubo.GetData().mvp = mvp;
 		m_cube_ubo.Map(g_VkGenerator.Device(), _image_index);
 	}
 }
