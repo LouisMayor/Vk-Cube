@@ -8,27 +8,30 @@ namespace VkRes
 
 		UniformBuffer() = default;
 
-		UniformBuffer(vk::Device _device, vk::PhysicalDevice _physical_device, uint32_t num_of_buffers = 1, bool dynamic = false) : m_dynamic(dynamic)
+		UniformBuffer(vk::Device _device, vk::PhysicalDevice _physical_device, uint32_t num_of_buffers = 1,
+		              bool       dynamic                                                               = false) : m_dynamic(
+			dynamic)
 		{
 			assert(("invalid number of buffers"), num_of_buffers > 0);
 
 			m_uniform_type = m_dynamic ?
-				                 vk::DescriptorType::eUniformBuffer :
-				                 vk::DescriptorType::eUniformBufferDynamic;
+				                 vk::DescriptorType::eUniformBufferDynamic :
+				                 vk::DescriptorType::eUniformBuffer;
 
 			m_buffer_size = sizeof(Data);
 			m_buffers.resize(num_of_buffers);
 			m_descriptor_sets.resize(num_of_buffers);
 
-			for (auto &buffer : m_buffers)
+			for (auto& buffer : m_buffers)
 			{
-				std::get<0>(buffer) = VkRes::Buffer(_device, _physical_device, m_buffer_size, vk::BufferUsageFlagBits::eUniformBuffer);
+				std::get<0>(buffer) = VkRes::Buffer(_device, _physical_device, m_buffer_size,
+				                                    vk::BufferUsageFlagBits::eUniformBuffer);
 			}
 		}
 
 		void Destroy(vk::Device _device)
 		{
-			for (auto &i : m_buffers)
+			for (auto& i : m_buffers)
 			{
 				std::get<0>(i).Destroy(_device);
 			}
@@ -40,23 +43,24 @@ namespace VkRes
 			m_descriptor_set_layout_binding =
 					VkRes::CreateDescriptorSetLayout(m_uniform_type,
 					                                 _stage_flags,
-					                                 _dst_binding);
+					                                 _dst_binding,
+					                                 nullptr);
 		}
 
-		void CreateDescriptorSet(const int                _buffer_index,
+		void CreateDescriptorSet(const int          _buffer_index,
 		                         vk::DescriptorSet& _set,
-		                         const int                _dst_binding)
+		                         const int          _dst_binding)
 		{
 			m_descriptor_sets[_buffer_index] = VkRes::CreateDescriptorSet(_set,
-			                                              m_uniform_type,
-			                                              &DescInfo(_buffer_index),
-			                                              nullptr,
-			                                              _dst_binding);
+			                                                              m_uniform_type,
+			                                                              &DescInfo(_buffer_index),
+			                                                              nullptr,
+			                                                              _dst_binding);
 		}
 
-		void UpdateDescriptorSet(vk::Device _device)
+		void UpdateDescriptorSet(vk::Device _device, const uint32_t _index)
 		{
-			_device.updateDescriptorSets(1, &DescSet(), 0, nullptr);
+			_device.updateDescriptorSets(1, &DescSet(_index), 0, nullptr);
 		}
 
 		void Map(vk::Device _device, const int _buffer_index = 0)
@@ -107,7 +111,7 @@ namespace VkRes
 		{
 			m_info.setBuffer(GetBuffer(_buffer_index));
 			m_info.setOffset(0);
-			m_info.setRange(TotalBufferSize());
+			m_info.setRange(m_buffer_size);
 
 			return m_info;
 		}

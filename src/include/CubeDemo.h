@@ -83,6 +83,11 @@ private:
 		glm::mat4x4 mvp;
 	};
 
+	struct TimeData
+	{
+		float timer;
+	};
+
 	VkRes::Swapchain                m_swapchain;
 	VkRes::Command                  m_command;
 	VkRes::DepthBuffer              m_depth_buffer;

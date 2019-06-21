@@ -7,13 +7,13 @@ namespace VkRes
 	public:
 		DescriptorSet() = default;
 
-		DescriptorSet(vk::Device _device, const uint32_t _num_of_sets, vk::DescriptorPool _pool, vk::DescriptorSetLayout _layout)
+		DescriptorSet(vk::Device _device, const uint32_t _num_of_sets, vk::DescriptorPool _pool, vk::DescriptorSetLayout* _layouts)
 		{
 			const vk::DescriptorSetAllocateInfo alloc_info =
 			{
 				_pool,
 				_num_of_sets,
-				&_layout
+				_layouts
 			};
 
 			m_sets.resize(_num_of_sets);

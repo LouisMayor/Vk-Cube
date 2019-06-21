@@ -18,12 +18,12 @@ void VkCubeDemo::Setup()
 	CreateRenderPasses();
 	CreateFrameBuffers();
 	CreateShaders();
-	CreatePipelines();
-	CreateSyncObjects();
 	CreateResources();
 	CreateDescriptorLayouts();
 	CreateDescriptorPools();
 	CreateDescriptorSets();
+	CreatePipelines();
+	CreateSyncObjects();
 
 	const bool msaa = Settings::Instance()->use_msaa;
 
@@ -77,6 +77,9 @@ void VkCubeDemo::Run()
 void VkCubeDemo::Shutdown()
 {
 	g_VkGenerator.Device().waitIdle();
+
+	m_desc_set_layouts.Destroy(g_VkGenerator.Device());
+	m_desc_pool.Destroy(g_VkGenerator.Device());
 
 	m_cube_ubo.Destroy(g_VkGenerator.Device());
 
@@ -168,7 +171,7 @@ void VkCubeDemo::SubmitQueue()
 		return;
 	}
 
-	// UpdateBufferData(image_index); // not using yet
+	UpdateBufferData(image_index);
 
 	const auto command_buffer = m_command.CommandBuffer(image_index);
 
@@ -269,6 +272,11 @@ void VkCubeDemo::RecordCmdBuffer()
 		m_command.SetScissor(0, m_swapchain.Extent().width, m_swapchain.Extent().height, buffer_index);
 
 		m_command.BindPipeline(vk::PipelineBindPoint::eGraphics, m_graphics_pipeline.Pipeline(), buffer_index);
+
+		m_command.PushConstants<float>(m_total_time, m_graphics_pipeline.PipelineLayout(), vk::ShaderStageFlagBits::eFragment, buffer_index);
+
+		m_command.BindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_graphics_pipeline.PipelineLayout(),
+		                             &m_desc_sets.Get(buffer_index), buffer_index);
 
 		m_command.Draw(3, 1, 0, 0, buffer_index);
 
@@ -398,7 +406,8 @@ void VkCubeDemo::CreatePipelines()
 	m_graphics_pipeline.SetViewport(m_swapchain.Extent(), 0.0f, 1.0f);
 	m_graphics_pipeline.SetRasterizer(VK_FALSE, VK_FALSE, vk::CompareOp::eNever, samples, VK_FALSE, VK_FALSE);
 	m_graphics_pipeline.SetShaders(stages);
-	m_graphics_pipeline.CreatePipelineLayout(g_VkGenerator.Device(), nullptr, 0, 0);
+	m_graphics_pipeline.SetPushConstants<float>(0, vk::ShaderStageFlagBits::eFragment);
+	m_graphics_pipeline.CreatePipelineLayout(g_VkGenerator.Device(), m_desc_set_layouts.Get(), 1, 1);
 	m_graphics_pipeline.CreateGraphicPipeline(g_VkGenerator.Device(), m_render_pass.Pass());
 }
 
@@ -480,14 +489,17 @@ void VkCubeDemo::RecreateSwapchain()
 void VkCubeDemo::CreateDescriptorLayouts()
 {
 	m_cube_ubo.CreateDescriptorSetLayout(vk::ShaderStageFlagBits::eVertex, 0);
+	//m_time_ubo.CreateDescriptorSetLayout(vk::ShaderStageFlagBits::eFragment, 1);
 
 	m_desc_set_layouts.Add(m_cube_ubo.DescLayoutBinding());
+	//m_desc_set_layouts.Add(m_time_ubo.DescLayoutBinding());
 	m_desc_set_layouts.CreateLayouts(g_VkGenerator.Device());
 }
 
 void VkCubeDemo::CreateDescriptorPools()
 {
 	m_desc_pool.Add(m_cube_ubo.DescLayoutBinding().descriptorType, m_cube_ubo.DescLayoutBinding().binding);
+	//m_desc_pool.Add(m_time_ubo.DescLayoutBinding().descriptorType, m_time_ubo.DescLayoutBinding().binding);
 	m_desc_pool.CreatePool(g_VkGenerator.Device(), m_swapchain.ImageViews().size());
 }
 
@@ -498,9 +510,13 @@ void VkCubeDemo::CreateDescriptorSets()
 	                                   m_desc_pool.Get(),
 	                                   m_desc_set_layouts.Get());
 
-	for(int i = 0; i < m_swapchain.ImageViews().size(); ++i)
+	for (int i = 0 ; i < m_swapchain.ImageViews().size() ; ++i)
 	{
 		m_cube_ubo.CreateDescriptorSet(i, m_desc_sets.Get(i), m_cube_ubo.DescLayoutBinding().binding);
+		//m_time_ubo.CreateDescriptorSet(i, m_desc_sets.Get(i), m_time_ubo.DescLayoutBinding().binding);
+
+		m_cube_ubo.UpdateDescriptorSet(g_VkGenerator.Device(), i);
+		//m_time_ubo.UpdateDescriptorSet(g_VkGenerator.Device(), i);
 	}
 }
 
@@ -513,10 +529,10 @@ void VkCubeDemo::CreateResources()
 
 void VkCubeDemo::UpdateBufferData(uint32_t _image_index)
 {
+	static auto start_time = std::chrono::high_resolution_clock::now();
+
 	if (m_cube_ubo.WantsPerFrameUpdate())
 	{
-		static auto start_time = std::chrono::high_resolution_clock::now();
-
 		auto current_time = std::chrono::high_resolution_clock::now();
 		auto time         = std::chrono::duration<float, std::chrono::seconds::period>(current_time - start_time).count();
 		auto dims         = m_swapchain.Extent();

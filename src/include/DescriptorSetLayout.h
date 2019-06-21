@@ -16,14 +16,26 @@ namespace VkRes
 				m_layout_bindings.data()
 			};
 
-			if (m_layout_bindings.size() > 0)
+			m_layouts.resize(3);
+			if (m_layouts.size() > 0)
 			{
-				const auto result = _device.createDescriptorSetLayout(&create_info, nullptr, &m_layout);
-				assert(("Failed to create a descriptor set layout", result == vk::Result::eSuccess));
+				for(auto &desc : m_layouts)
+				{
+					const auto result = _device.createDescriptorSetLayout(&create_info, nullptr, &desc);
+					assert(("Failed to create a descriptor set layout", result == vk::Result::eSuccess));
+				}				
 			}
 			else
 			{
 				throw std::logic_error("DescriptorSetLayout has no values");
+			}
+		}
+
+		void Destroy(vk::Device _device)
+		{
+			for (auto& desc : m_layouts)
+			{
+				_device.destroyDescriptorSetLayout(desc);
 			}
 		}
 
@@ -38,13 +50,18 @@ namespace VkRes
 			m_layout_bindings.shrink_to_fit();
 		}
 
-		[[nodiscard]] vk::DescriptorSetLayout& Get()
+		[[nodiscard]] vk::DescriptorSetLayout* Get()
 		{
-			return m_layout;
+			return m_layouts.data();
+		}
+
+		[[nodiscard]] uint32_t BindingCount() const
+		{
+			return m_layout_bindings.size();
 		}
 
 	private:
-		vk::DescriptorSetLayout                     m_layout;
+		std::vector<vk::DescriptorSetLayout>        m_layouts;
 		std::vector<vk::DescriptorSetLayoutBinding> m_layout_bindings;
 	};
 }

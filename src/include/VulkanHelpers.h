@@ -269,9 +269,18 @@ namespace VkRes
 
 	[[nodiscard]] static vk::DescriptorSetLayoutBinding CreateDescriptorSetLayout(const vk::DescriptorType   _type,
 	                                                                              const vk::ShaderStageFlags _stage_flags,
-	                                                                              const int                  _dst_binding)
+	                                                                              const uint32_t             _dst_binding,
+	                                                                              const vk::Sampler*         _sampler)
 	{
-		vk::DescriptorSetLayoutBinding desc_set_layout_binding;
+		const vk::DescriptorSetLayoutBinding desc_set_layout_binding =
+		{
+			_dst_binding,
+			_type,
+			1,
+			_stage_flags,
+			_sampler
+		};
+
 		return desc_set_layout_binding;
 	}
 
@@ -279,9 +288,20 @@ namespace VkRes
 	                                                                const vk::DescriptorType        _desc_type,
 	                                                                const vk::DescriptorBufferInfo* _buffer_info,
 	                                                                const vk::DescriptorImageInfo*  _desc_image_info,
-	                                                                const int                       _dst_binding)
+	                                                                const uint32_t                  _dst_binding)
 	{
-		vk::WriteDescriptorSet desc_set;
+		const vk::WriteDescriptorSet desc_set =
+		{
+			_desc_set,
+			_dst_binding,
+			0,
+			1,
+			_desc_type,
+			_desc_image_info,
+			_buffer_info,
+			nullptr
+		};
+
 		return desc_set;
 	}
 }
