@@ -489,17 +489,14 @@ void VkCubeDemo::RecreateSwapchain()
 void VkCubeDemo::CreateDescriptorLayouts()
 {
 	m_cube_ubo.CreateDescriptorSetLayout(vk::ShaderStageFlagBits::eVertex, 0);
-	//m_time_ubo.CreateDescriptorSetLayout(vk::ShaderStageFlagBits::eFragment, 1);
 
 	m_desc_set_layouts.Add(m_cube_ubo.DescLayoutBinding());
-	//m_desc_set_layouts.Add(m_time_ubo.DescLayoutBinding());
 	m_desc_set_layouts.CreateLayouts(g_VkGenerator.Device());
 }
 
 void VkCubeDemo::CreateDescriptorPools()
 {
 	m_desc_pool.Add(m_cube_ubo.DescLayoutBinding().descriptorType, m_cube_ubo.DescLayoutBinding().binding);
-	//m_desc_pool.Add(m_time_ubo.DescLayoutBinding().descriptorType, m_time_ubo.DescLayoutBinding().binding);
 	m_desc_pool.CreatePool(g_VkGenerator.Device(), m_swapchain.ImageViews().size());
 }
 
@@ -513,10 +510,8 @@ void VkCubeDemo::CreateDescriptorSets()
 	for (int i = 0 ; i < m_swapchain.ImageViews().size() ; ++i)
 	{
 		m_cube_ubo.CreateDescriptorSet(i, m_desc_sets.Get(i), m_cube_ubo.DescLayoutBinding().binding);
-		//m_time_ubo.CreateDescriptorSet(i, m_desc_sets.Get(i), m_time_ubo.DescLayoutBinding().binding);
 
 		m_cube_ubo.UpdateDescriptorSet(g_VkGenerator.Device(), i);
-		//m_time_ubo.UpdateDescriptorSet(g_VkGenerator.Device(), i);
 	}
 }
 
