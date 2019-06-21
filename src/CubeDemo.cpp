@@ -273,7 +273,8 @@ void VkCubeDemo::RecordCmdBuffer()
 
 		m_command.BindPipeline(vk::PipelineBindPoint::eGraphics, m_graphics_pipeline.Pipeline(), buffer_index);
 
-		m_command.PushConstants<float>(m_total_time, m_graphics_pipeline.PipelineLayout(), vk::ShaderStageFlagBits::eFragment, buffer_index);
+		m_command.PushConstants<float>(m_total_time, m_graphics_pipeline.PipelineLayout(), vk::ShaderStageFlagBits::eFragment,
+		                               buffer_index);
 
 		m_command.BindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_graphics_pipeline.PipelineLayout(),
 		                             &m_desc_sets.Get(buffer_index), buffer_index);
