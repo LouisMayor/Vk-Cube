@@ -81,6 +81,7 @@ void VkCubeDemo::Shutdown()
 	m_desc_set_layouts.Destroy(g_VkGenerator.Device());
 	m_desc_pool.Destroy(g_VkGenerator.Device());
 
+	m_view_ubo.Destroy(g_VkGenerator.Device());
 	m_cube_ubo.Destroy(g_VkGenerator.Device());
 
 	for (auto& i : m_render_list)
@@ -171,7 +172,7 @@ void VkCubeDemo::SubmitQueue()
 		return;
 	}
 
-	UpdateBufferData(image_index);
+	UpdateBufferData(image_index, false);
 
 	const auto command_buffer = m_command.CommandBuffer(image_index);
 
@@ -485,19 +486,27 @@ void VkCubeDemo::RecreateSwapchain()
 	CreateRenderPasses();
 	CreateFrameBuffers();
 	CreatePipelines();
+
+	for (size_t image = 0; image < m_swapchain.ImageViews().size(); ++image)
+	{
+		UpdateBufferData(image, true);
+	}
 }
 
 void VkCubeDemo::CreateDescriptorLayouts()
 {
 	m_cube_ubo.CreateDescriptorSetLayout(vk::ShaderStageFlagBits::eVertex, 0);
+	m_view_ubo.CreateDescriptorSetLayout(vk::ShaderStageFlagBits::eFragment, 1);
 
 	m_desc_set_layouts.Add(m_cube_ubo.DescLayoutBinding());
+	m_desc_set_layouts.Add(m_view_ubo.DescLayoutBinding());
 	m_desc_set_layouts.CreateLayouts(g_VkGenerator.Device());
 }
 
 void VkCubeDemo::CreateDescriptorPools()
 {
 	m_desc_pool.Add(m_cube_ubo.DescLayoutBinding().descriptorType, m_cube_ubo.DescLayoutBinding().binding);
+	m_desc_pool.Add(m_view_ubo.DescLayoutBinding().descriptorType, m_view_ubo.DescLayoutBinding().binding);
 	m_desc_pool.CreatePool(g_VkGenerator.Device(), m_swapchain.ImageViews().size());
 }
 
@@ -511,8 +520,10 @@ void VkCubeDemo::CreateDescriptorSets()
 	for (int i = 0 ; i < m_swapchain.ImageViews().size() ; ++i)
 	{
 		m_cube_ubo.CreateDescriptorSet(i, m_desc_sets.Get(i), m_cube_ubo.DescLayoutBinding().binding);
+		m_view_ubo.CreateDescriptorSet(i, m_desc_sets.Get(i), m_view_ubo.DescLayoutBinding().binding);
 
 		m_cube_ubo.UpdateDescriptorSet(g_VkGenerator.Device(), i);
+		m_view_ubo.UpdateDescriptorSet(g_VkGenerator.Device(), i);
 	}
 }
 
@@ -521,27 +532,42 @@ void VkCubeDemo::CreateResources()
 	m_cube_ubo = VkRes::UniformBuffer<CubeData, VkRes::EDataUsageFlags::PerFrame>
 	(g_VkGenerator.Device(), g_VkGenerator.PhysicalDevice(),
 	 m_swapchain.ImageViews().size(), false);
+
+	m_view_ubo = VkRes::UniformBuffer<ViewportData, VkRes::EDataUsageFlags::OnResize>
+		(g_VkGenerator.Device(), g_VkGenerator.PhysicalDevice(),
+			m_swapchain.ImageViews().size(), false);
 }
 
-void VkCubeDemo::UpdateBufferData(uint32_t _image_index)
+void VkCubeDemo::UpdateBufferData(uint32_t _image_index, bool _resize)
 {
-	static auto start_time = std::chrono::high_resolution_clock::now();
-
-	if (m_cube_ubo.WantsPerFrameUpdate())
+	if (_resize)
 	{
-		auto current_time = std::chrono::high_resolution_clock::now();
-		auto time         = std::chrono::duration<float, std::chrono::seconds::period>(current_time - start_time).count();
-		auto dims         = m_swapchain.Extent();
+		if (m_view_ubo.WantsOnResizeUpdate())
+		{
+			m_view_ubo.GetData(_image_index).dims = glm::vec2(static_cast<float>(m_swapchain.Extent().width), static_cast<float>(m_swapchain.Extent().height));
+			m_view_ubo.Map(g_VkGenerator.Device(), _image_index);
+		}
+	}
+	else
+	{
+		static auto start_time = std::chrono::high_resolution_clock::now();
 
-		auto mvp = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)) *
+		if (m_cube_ubo.WantsPerFrameUpdate())
+		{
+			auto current_time = std::chrono::high_resolution_clock::now();
+			auto time = std::chrono::duration<float, std::chrono::seconds::period>(current_time - start_time).count();
+			auto dims = m_swapchain.Extent();
+
+			auto mvp = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)) *
 				glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-		auto proj = glm::perspective(glm::radians(45.0f), (float)dims.width / (float)dims.height, 0.1f, 10.0f);
-		proj[1][1] *= -1;
+			auto proj = glm::perspective(glm::radians(45.0f), (float)dims.width / (float)dims.height, 0.1f, 10.0f);
+			proj[1][1] *= -1;
 
-		mvp *= proj;
+			mvp *= proj;
 
-		m_cube_ubo.GetData().mvp = mvp;
-		m_cube_ubo.Map(g_VkGenerator.Device(), _image_index);
+			m_cube_ubo.GetData(_image_index).mvp = mvp;
+			m_cube_ubo.Map(g_VkGenerator.Device(), _image_index);
+		}
 	}
 }

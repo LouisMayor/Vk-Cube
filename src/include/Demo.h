@@ -53,7 +53,7 @@ private:
 
 	void virtual CreateResources() = 0;
 
-	void virtual UpdateBufferData(uint32_t) = 0;
+	void virtual UpdateBufferData(uint32_t, bool) = 0;
 
 	void virtual LoadAssets() = 0;
 

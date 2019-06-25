@@ -46,7 +46,7 @@ private:
 
 	void CreateResources() override;
 
-	void UpdateBufferData(uint32_t) override;
+	void UpdateBufferData(uint32_t, bool) override;
 
 	void LoadAssets() override;
 
@@ -88,6 +88,11 @@ private:
 		float timer;
 	};
 
+	struct ViewportData
+	{
+		glm::vec2 dims;
+	};
+
 	VkRes::Swapchain                m_swapchain;
 	VkRes::Command                  m_command;
 	VkRes::DepthBuffer              m_depth_buffer;
@@ -104,6 +109,7 @@ private:
 	std::vector<VkRes::Semaphore>   m_image_available_semaphores;
 	std::vector<VkRes::Semaphore>   m_render_finished_semaphores;
 
+	VkRes::UniformBuffer<ViewportData, VkRes::EDataUsageFlags::OnResize> m_view_ubo;
 	VkRes::UniformBuffer<CubeData, VkRes::EDataUsageFlags::PerFrame> m_cube_ubo;
 	std::vector<Model>                                               m_render_list;
 

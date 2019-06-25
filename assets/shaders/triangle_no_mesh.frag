@@ -6,6 +6,11 @@ layout(binding = 0) uniform UTranformData
     mat4 MVP;
 } TranformData;
 
+layout(binding = 1) uniform UViewportData
+{
+    vec2 Dimensions;
+} ViewportData;
+
 layout(push_constant) uniform UTimeData 
 {
     float Time;
@@ -16,7 +21,7 @@ layout(location = 0) in vec3 fragColour;
 
 void main()
 {
-	vec2 uv = gl_FragCoord.xy / vec2(1280.0f, 720.0f);
+	vec2 uv = gl_FragCoord.xy / ViewportData.Dimensions.xy;
 	vec3 col = 0.5 + 0.5 * cos(TimeData.Time + uv.xyx + vec3(0,2,4));	
 
 	outColor = vec4(col, 1.0);
