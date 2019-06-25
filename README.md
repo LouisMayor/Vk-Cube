@@ -1,7 +1,7 @@
 # Vk-Cube
 3D cube app using Vulkan
 
-![Cube](https://github.com/LouisMayor/Vk-Cube/blob/master/screenshots/vk-cube-v1.png)
+![Cube](https://github.com/LouisMayor/Vk-Cube/blob/master/screenshots/vk-cube-v1-aa.png)
 
 ### Features:
 - ImGui
