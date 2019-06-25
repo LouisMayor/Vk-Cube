@@ -25,6 +25,12 @@ void VkCubeDemo::Setup()
 	CreatePipelines();
 	CreateSyncObjects();
 
+	// Update all buffers that rely on swapchain resizing
+	for (size_t image = 0 ; image < m_swapchain.ImageViews().size() ; ++image)
+	{
+		UpdateBufferData(image, true);
+	}
+
 	const bool msaa = Settings::Instance()->use_msaa;
 
 	m_ui_instance.Init(m_swapchain.Extent().width, m_swapchain.Extent().height, g_VkGenerator.WindowHdle());
@@ -54,17 +60,7 @@ void VkCubeDemo::Run()
 
 		if (m_settings_updated)
 		{
-			const bool msaa = Settings::Instance()->use_msaa;
-
 			RecreateSwapchain();
-			m_ui_instance.Destroy(g_VkGenerator.Device());
-			m_ui_instance.Recreate(g_VkGenerator.Device(), m_swapchain.Extent().width, m_swapchain.Extent().height,
-			                       g_VkGenerator.WindowHdle());
-			m_ui_instance.LoadResources(g_VkGenerator.Device(), g_VkGenerator.PhysicalDevice(), m_shader_directory, m_command,
-			                            m_render_pass.Pass(), g_VkGenerator.GraphicsQueue(), msaa ?
-				                                                                                 Settings::Instance()->
-				                                                                                 GetSampleCount() :
-				                                                                                 vk::SampleCountFlagBits::e1);
 
 			m_settings_updated = !m_settings_updated;
 		}
@@ -487,10 +483,21 @@ void VkCubeDemo::RecreateSwapchain()
 	CreateFrameBuffers();
 	CreatePipelines();
 
-	for (size_t image = 0; image < m_swapchain.ImageViews().size(); ++image)
+	for (size_t image = 0 ; image < m_swapchain.ImageViews().size() ; ++image)
 	{
 		UpdateBufferData(image, true);
 	}
+
+	const bool msaa = Settings::Instance()->use_msaa;
+
+	m_ui_instance.Destroy(g_VkGenerator.Device());
+	m_ui_instance.Recreate(g_VkGenerator.Device(), m_swapchain.Extent().width, m_swapchain.Extent().height,
+	                       g_VkGenerator.WindowHdle());
+	m_ui_instance.LoadResources(g_VkGenerator.Device(), g_VkGenerator.PhysicalDevice(), m_shader_directory, m_command,
+	                            m_render_pass.Pass(), g_VkGenerator.GraphicsQueue(), msaa ?
+		                                                                                 Settings::Instance()->
+		                                                                                 GetSampleCount() :
+		                                                                                 vk::SampleCountFlagBits::e1);
 }
 
 void VkCubeDemo::CreateDescriptorLayouts()
@@ -534,8 +541,8 @@ void VkCubeDemo::CreateResources()
 	 m_swapchain.ImageViews().size(), false);
 
 	m_view_ubo = VkRes::UniformBuffer<ViewportData, VkRes::EDataUsageFlags::OnResize>
-		(g_VkGenerator.Device(), g_VkGenerator.PhysicalDevice(),
-			m_swapchain.ImageViews().size(), false);
+	(g_VkGenerator.Device(), g_VkGenerator.PhysicalDevice(),
+	 m_swapchain.ImageViews().size(), false);
 }
 
 void VkCubeDemo::UpdateBufferData(uint32_t _image_index, bool _resize)
@@ -544,7 +551,8 @@ void VkCubeDemo::UpdateBufferData(uint32_t _image_index, bool _resize)
 	{
 		if (m_view_ubo.WantsOnResizeUpdate())
 		{
-			m_view_ubo.GetData(_image_index).dims = glm::vec2(static_cast<float>(m_swapchain.Extent().width), static_cast<float>(m_swapchain.Extent().height));
+			m_view_ubo.GetData(_image_index).dims = glm::vec2(static_cast<float>(m_swapchain.Extent().width),
+			                                                  static_cast<float>(m_swapchain.Extent().height));
 			m_view_ubo.Map(g_VkGenerator.Device(), _image_index);
 		}
 	}
@@ -555,11 +563,11 @@ void VkCubeDemo::UpdateBufferData(uint32_t _image_index, bool _resize)
 		if (m_cube_ubo.WantsPerFrameUpdate())
 		{
 			auto current_time = std::chrono::high_resolution_clock::now();
-			auto time = std::chrono::duration<float, std::chrono::seconds::period>(current_time - start_time).count();
-			auto dims = m_swapchain.Extent();
+			auto time         = std::chrono::duration<float, std::chrono::seconds::period>(current_time - start_time).count();
+			auto dims         = m_swapchain.Extent();
 
 			auto mvp = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)) *
-				glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+					glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 			auto proj = glm::perspective(glm::radians(45.0f), (float)dims.width / (float)dims.height, 0.1f, 10.0f);
 			proj[1][1] *= -1;
