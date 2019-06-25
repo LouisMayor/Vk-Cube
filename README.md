@@ -1,6 +1,8 @@
 # Vk-Cube
 3D cube app using Vulkan
 
+![Cube](https://github.com/LouisMayor/Vk-Cube/blob/master/screenshots/vk-cube-v1.png)
+
 ### Features:
 - ImGui
 - Obj model loading via TinyObjLoader
