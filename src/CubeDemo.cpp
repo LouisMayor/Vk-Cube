@@ -276,7 +276,12 @@ void VkCubeDemo::RecordCmdBuffer()
 		m_command.BindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_graphics_pipeline.PipelineLayout(),
 		                             &m_desc_sets.Get(buffer_index), buffer_index);
 
-		m_command.Draw(3, 1, 0, 0, buffer_index);
+		for(auto &model : m_render_list)
+		{
+			model.MeshInstance().Draw(m_command.CommandBuffer(buffer_index));
+		}
+
+		// m_command.Draw(3, 1, 0, 0, buffer_index);
 
 		m_ui_instance.Draw(m_command, buffer_index);
 
@@ -379,12 +384,12 @@ void VkCubeDemo::CreateShaders()
 	m_vert = VkRes::Shader(g_VkGenerator.Device(),
 	                       vk::ShaderStageFlagBits::eVertex,
 	                       m_shader_directory,
-	                       "triangle_no_mesh.vert.spv");
+	                       "Tranform.vert.spv");
 
 	m_frag = VkRes::Shader(g_VkGenerator.Device(),
 	                       vk::ShaderStageFlagBits::eFragment,
 	                       m_shader_directory,
-	                       "triangle_no_mesh.frag.spv");
+	                       "unlit.frag.spv");
 }
 
 void VkCubeDemo::CreatePipelines()
@@ -400,7 +405,10 @@ void VkCubeDemo::CreatePipelines()
 		                                        Settings::Instance()->GetSampleCount() :
 		                                        vk::SampleCountFlagBits::e1;
 
-	m_graphics_pipeline.SetInputAssembler(nullptr, {}, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
+	const auto binding = Vertex::getBindingDescription();
+	const auto attrib = Vertex::getAttributeDescriptions();
+
+	m_graphics_pipeline.SetInputAssembler(&binding, attrib, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
 	m_graphics_pipeline.SetViewport(m_swapchain.Extent(), 0.0f, 1.0f);
 	m_graphics_pipeline.SetRasterizer(VK_FALSE, VK_FALSE, vk::CompareOp::eNever, samples, VK_FALSE, VK_FALSE);
 	m_graphics_pipeline.SetShaders(stages);
@@ -563,18 +571,15 @@ void VkCubeDemo::UpdateBufferData(uint32_t _image_index, bool _resize)
 		if (m_cube_ubo.WantsPerFrameUpdate())
 		{
 			auto current_time = std::chrono::high_resolution_clock::now();
-			auto time         = std::chrono::duration<float, std::chrono::seconds::period>(current_time - start_time).count();
+			auto time         = std::chrono::duration<float, std::chrono::seconds::period>(current_time - start_time).count() * 0.5f;
 			auto dims         = m_swapchain.Extent();
 
-			auto mvp = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)) *
-					glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+			auto m = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 1.0f));
+			auto v = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+			auto p = glm::perspective(glm::radians(45.0f), (float)dims.width / (float)dims.height, 0.1f, 10.0f);
+			p[1][1] *= -1;
 
-			auto proj = glm::perspective(glm::radians(45.0f), (float)dims.width / (float)dims.height, 0.1f, 10.0f);
-			proj[1][1] *= -1;
-
-			mvp *= proj;
-
-			m_cube_ubo.GetData(_image_index).mvp = mvp;
+			m_cube_ubo.GetData(_image_index).mvp = p * v * m;
 			m_cube_ubo.Map(g_VkGenerator.Device(), _image_index);
 		}
 	}

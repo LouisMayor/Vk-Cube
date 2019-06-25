@@ -15,6 +15,23 @@ void Mesh::Destroy(vk::Device _device)
 	}
 }
 
+void Mesh::MapData(vk::Device _device, int _shape_count)
+{
+	for(int index = 0; index < _shape_count; ++index)
+	{
+		auto vert = m_vertex_buffer[index];
+		auto indi = m_index_buffer[index];
+
+		vert.Map(_device);
+		std::memcpy(vert.Data(), m_vertices[0].data(), m_vertices[0].size() * sizeof(Vertex));
+		vert.Unmap(_device);
+
+		indi.Map(_device);
+		std::memcpy(indi.Data(), m_indices[0].data(), m_indices[0].size() * sizeof(int));
+		indi.Unmap(_device);
+	}
+}
+
 void Mesh::Load(vk::Device                        _device,
                 vk::PhysicalDevice                _physical_device,
                 std::string                       _dir,
@@ -43,7 +60,7 @@ void Mesh::Load(vk::Device                        _device,
 		{
 			Vertex vertex = {};
 
-			if (index.vertex_index != -1)
+			//if (index.vertex_index != -1)
 			{
 				vertex.pos =
 				{
@@ -53,26 +70,16 @@ void Mesh::Load(vk::Device                        _device,
 				};
 			}
 
-			if (index.normal_index != -1)
-			{
-				vertex.normal =
-				{
-					attrib.normals[3 * index.normal_index + 0],
-					attrib.normals[3 * index.normal_index + 1],
-					attrib.normals[3 * index.normal_index + 2]
-				};
-			}
+			vertex.color = { 1.0f, 1.0f, 1.0f };
 
-			if (index.texcoord_index != -1)
-			{
-				vertex.texCoord =
-				{
-					attrib.texcoords[2 * index.texcoord_index + 0],
-					1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-				};
-			}
-
-			vertex.color = {1.0f, 1.0f, 1.0f};
+			//if (index.texcoord_index != -1)
+			//{
+			//	vertex.texCoord =
+			//	{
+			//		attrib.texcoords[2 * index.texcoord_index + 0],
+			//		1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+			//	};
+			//}
 
 			if (unique_vertices.count(vertex) == 0)
 			{
@@ -100,9 +107,11 @@ void Mesh::Load(vk::Device                        _device,
 
 	for (size_t i = 0; i < _shapes.size(); i++)
 	{
-		m_vertex_buffer[i] = VkRes::Buffer(_device, _physical_device, sizeof(m_vertices[0]) * m_vertices.size(), vk::BufferUsageFlagBits::eVertexBuffer);
-		m_index_buffer[i] = VkRes::Buffer(_device, _physical_device, sizeof(m_indices[0]) * m_indices.size(), vk::BufferUsageFlagBits::eIndexBuffer);
-	}	
+		m_vertex_buffer[i] = VkRes::Buffer(_device, _physical_device, sizeof(m_vertices[0]) * m_vertices[0].size(), vk::BufferUsageFlagBits::eVertexBuffer);
+		m_index_buffer[i] = VkRes::Buffer(_device, _physical_device, sizeof(m_indices[0]) * m_indices[0].size(), vk::BufferUsageFlagBits::eIndexBuffer);
+	}
+
+	MapData(_device, _shapes.size());
 }
 
 void Mesh::Draw(vk::CommandBuffer _cmd_buffer)

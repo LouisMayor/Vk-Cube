@@ -12,6 +12,8 @@ public:
 
 	void Destroy(vk::Device);
 
+	void MapData(vk::Device, int);
+
 	void Load(vk::Device                       ,
 	          vk::PhysicalDevice               ,
 	          std::string                      ,
