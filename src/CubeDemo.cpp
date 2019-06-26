@@ -26,7 +26,7 @@ void VkCubeDemo::Setup()
 	CreateSyncObjects();
 
 	// Update all buffers that rely on swapchain resizing
-	for (size_t image = 0 ; image < m_swapchain.ImageViews().size() ; ++image)
+	for (size_t image = 0; image < m_swapchain.ImageViews().size(); ++image)
 	{
 		UpdateBufferData(image, true);
 	}
@@ -87,7 +87,7 @@ void VkCubeDemo::Shutdown()
 
 	m_ui_instance.Destroy(g_VkGenerator.Device());
 
-	for (int i = 0 ; i < MAX_FRAMES_IN_FLIGHT ; i++)
+	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
 		m_inflight_fences[i].Destroy(g_VkGenerator.Device());
 		m_image_available_semaphores[i].Destroy(g_VkGenerator.Device());
@@ -222,7 +222,7 @@ void VkCubeDemo::CreateSyncObjects()
 	m_image_available_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
 	m_render_finished_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
 
-	for (int i = 0 ; i < MAX_FRAMES_IN_FLIGHT ; i++)
+	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
 		m_inflight_fences[i]            = VkRes::Fence(g_VkGenerator.Device(), vk::FenceCreateFlagBits::eSignaled);
 		m_image_available_semaphores[i] = VkRes::Semaphore(g_VkGenerator.Device(), {});
@@ -249,7 +249,7 @@ void VkCubeDemo::RecordCmdBuffer()
 	m_ui_instance.PrepNextFrame(m_frame_delta, m_total_time);
 	m_ui_instance.Update(g_VkGenerator.Device(), g_VkGenerator.PhysicalDevice());
 
-	for (auto buffer_index = 0 ; buffer_index < m_command.CommandBufferCount() ; ++buffer_index)
+	for (auto buffer_index = 0; buffer_index < m_command.CommandBufferCount(); ++buffer_index)
 	{
 		m_command.BeginRecording(&begin_info, buffer_index);
 
@@ -276,7 +276,7 @@ void VkCubeDemo::RecordCmdBuffer()
 		m_command.BindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_graphics_pipeline.PipelineLayout(),
 		                             &m_desc_sets.Get(buffer_index), buffer_index);
 
-		for(auto &model : m_render_list)
+		for (auto& model : m_render_list)
 		{
 			model.MeshInstance().Draw(m_command.CommandBuffer(buffer_index));
 		}
@@ -323,7 +323,7 @@ void VkCubeDemo::CreateRenderPasses()
 	{
 		2,
 		vk::ImageLayout::eColorAttachmentOptimal
-	};	
+	};
 
 	std::vector<vk::AttachmentDescription> attachments =
 	{
@@ -350,7 +350,7 @@ void VkCubeDemo::CreateFrameBuffers()
 	const auto image_views = m_swapchain.ImageViews();
 	m_framebuffers.resize(image_views.size());
 
-	for (uint32_t i = 0 ; i < image_views.size() ; ++i)
+	for (uint32_t i = 0; i < image_views.size(); ++i)
 	{
 		std::vector<vk::ImageView> attachments =
 		{
@@ -406,7 +406,7 @@ void VkCubeDemo::CreatePipelines()
 		                                        vk::SampleCountFlagBits::e1;
 
 	const auto binding = Vertex::getBindingDescription();
-	const auto attrib = Vertex::getAttributeDescriptions();
+	const auto attrib  = Vertex::getAttributeDescriptions();
 
 	m_graphics_pipeline.SetInputAssembler(&binding, attrib, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
 	m_graphics_pipeline.SetViewport(m_swapchain.Extent(), 0.0f, 1.0f);
@@ -491,7 +491,7 @@ void VkCubeDemo::RecreateSwapchain()
 	CreateFrameBuffers();
 	CreatePipelines();
 
-	for (size_t image = 0 ; image < m_swapchain.ImageViews().size() ; ++image)
+	for (size_t image = 0; image < m_swapchain.ImageViews().size(); ++image)
 	{
 		UpdateBufferData(image, true);
 	}
@@ -571,8 +571,9 @@ void VkCubeDemo::UpdateBufferData(uint32_t _image_index, bool _resize)
 		if (m_cube_ubo.WantsPerFrameUpdate())
 		{
 			auto current_time = std::chrono::high_resolution_clock::now();
-			auto time         = std::chrono::duration<float, std::chrono::seconds::period>(current_time - start_time).count() * 0.5f;
-			auto dims         = m_swapchain.Extent();
+			auto time         = std::chrono::duration<float, std::chrono::seconds::period>(current_time - start_time).count() *
+					0.5f;
+			auto dims = m_swapchain.Extent();
 
 			auto m = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 1.0f));
 			auto v = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
