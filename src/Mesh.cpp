@@ -107,8 +107,8 @@ void Mesh::Load(vk::Device                        _device,
 
 	for (size_t i = 0; i < _shapes.size(); i++)
 	{
-		m_vertex_buffer[i] = VkRes::Buffer(_device, _physical_device, sizeof(m_vertices[0]) * m_vertices[0].size(), vk::BufferUsageFlagBits::eVertexBuffer);
-		m_index_buffer[i] = VkRes::Buffer(_device, _physical_device, sizeof(m_indices[0]) * m_indices[0].size(), vk::BufferUsageFlagBits::eIndexBuffer);
+		m_vertex_buffer[i] = VkRes::Buffer(_device, _physical_device, m_vertices[0].size() * sizeof(Vertex), vk::BufferUsageFlagBits::eVertexBuffer);
+		m_index_buffer[i] = VkRes::Buffer(_device, _physical_device, m_indices[0].size() * sizeof(int), vk::BufferUsageFlagBits::eIndexBuffer);
 	}
 
 	MapData(_device, _shapes.size());
