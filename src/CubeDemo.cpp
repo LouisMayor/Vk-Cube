@@ -242,9 +242,9 @@ void VkCubeDemo::RecordCmdBuffer()
 
 	std::array<vk::ClearValue, 3> clear_values = {};
 	clear_values[0].color.setFloat32({0.0f, 0.0f, 0.0f, 1.0f});
-	clear_values[1].color.setFloat32({0.0f, 0.0f, 0.0f, 1.0f});
-	clear_values[2].depthStencil.setDepth(1.0f);
-	clear_values[2].depthStencil.setStencil(0);
+	clear_values[1].depthStencil.setDepth(1.0f);
+	clear_values[1].depthStencil.setStencil(0);
+	clear_values[2].color.setFloat32({0.0f, 0.0f, 0.0f, 1.0f});
 
 	m_ui_instance.PrepNextFrame(m_frame_delta, m_total_time);
 	m_ui_instance.Update(g_VkGenerator.Device(), g_VkGenerator.PhysicalDevice());
@@ -281,8 +281,6 @@ void VkCubeDemo::RecordCmdBuffer()
 			model.MeshInstance().Draw(m_command.CommandBuffer(buffer_index));
 		}
 
-		// m_command.Draw(3, 1, 0, 0, buffer_index);
-
 		m_ui_instance.Draw(m_command, buffer_index);
 
 		m_command.EndRenderPass(buffer_index);
@@ -315,31 +313,28 @@ void VkCubeDemo::CreateRenderPasses()
 		vk::ImageLayout::eColorAttachmentOptimal
 	};
 
-	vk::AttachmentReference colour_resolve_attachment =
-	{
-		1,
-		vk::ImageLayout::eColorAttachmentOptimal
-	};
-
 	vk::AttachmentReference depth_attachment =
 	{
-		Settings::Instance()->use_msaa ?
-			2u :
-			1u,
+		1,
 		vk::ImageLayout::eDepthStencilAttachmentOptimal
 	};
+
+	vk::AttachmentReference colour_resolve_attachment =
+	{
+		2,
+		vk::ImageLayout::eColorAttachmentOptimal
+	};	
 
 	std::vector<vk::AttachmentDescription> attachments =
 	{
 		m_backbuffer.GetAttachmentDesc(),
+		m_depth_buffer.GetAttachmentDesc()
 	};
 
 	if (Settings::Instance()->use_msaa)
 	{
 		attachments.emplace_back(m_backbuffer.GetResolveAttachmentDesc());
 	}
-
-	attachments.emplace_back(m_depth_buffer.GetAttachmentDesc());
 
 	m_render_pass = VkRes::RenderPass(attachments,
 	                                  &colour_attachment, 1,
@@ -357,15 +352,20 @@ void VkCubeDemo::CreateFrameBuffers()
 
 	for (uint32_t i = 0 ; i < image_views.size() ; ++i)
 	{
-		std::vector<vk::ImageView> attachments;
+		std::vector<vk::ImageView> attachments =
+		{
+			image_views[i],
+			m_depth_buffer.ImageView()
+		};
 
 		if (Settings::Instance()->use_msaa && Settings::Instance()->GetSampleCount() > vk::SampleCountFlagBits::e1)
 		{
 			attachments.push_back(m_backbuffer.GetImageView());
-		}
 
-		attachments.push_back(image_views[i]);
-		attachments.push_back(m_depth_buffer.ImageView());
+			// odd bug: after adding resolve attachement, the framebuffer expects the order to be in reversed order.
+			// not sure what this is about, last time going through the vulkan tutorial (C API), didn't run into this.
+			std::reverse(attachments.begin(), attachments.end());
+		}
 
 		m_framebuffers[i] = VkRes::FrameBuffer(g_VkGenerator.Device(), attachments,
 		                                       m_render_pass.Pass(), m_swapchain.Extent(),
@@ -410,7 +410,7 @@ void VkCubeDemo::CreatePipelines()
 
 	m_graphics_pipeline.SetInputAssembler(&binding, attrib, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
 	m_graphics_pipeline.SetViewport(m_swapchain.Extent(), 0.0f, 1.0f);
-	m_graphics_pipeline.SetRasterizer(VK_FALSE, VK_FALSE, vk::CompareOp::eNever, samples, VK_FALSE, VK_FALSE);
+	m_graphics_pipeline.SetRasterizer(VK_TRUE, VK_TRUE, vk::CompareOp::eLess, samples, VK_FALSE, VK_FALSE);
 	m_graphics_pipeline.SetShaders(stages);
 	m_graphics_pipeline.SetPushConstants<float>(0, vk::ShaderStageFlagBits::eFragment);
 	m_graphics_pipeline.CreatePipelineLayout(g_VkGenerator.Device(), m_desc_set_layouts.Get(), 1, 1);
