@@ -532,10 +532,10 @@ void VkCubeDemo::CreateDescriptorSets()
 	                                   m_desc_pool.Get(),
 	                                   m_desc_set_layouts.Get());
 
-	for (int i = 0 ; i < m_swapchain.ImageViews().size() ; ++i)
+	for (int i = 0; i < m_swapchain.ImageViews().size(); ++i)
 	{
-		m_cube_ubo.CreateDescriptorSet(i, m_desc_sets.Get(i), m_cube_ubo.DescLayoutBinding().binding);
-		m_view_ubo.CreateDescriptorSet(i, m_desc_sets.Get(i), m_view_ubo.DescLayoutBinding().binding);
+		m_cube_ubo.CreateDescriptorSet(i, m_desc_sets.Get(i));
+		m_view_ubo.CreateDescriptorSet(i, m_desc_sets.Get(i));
 
 		m_cube_ubo.UpdateDescriptorSet(g_VkGenerator.Device(), i);
 		m_view_ubo.UpdateDescriptorSet(g_VkGenerator.Device(), i);

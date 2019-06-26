@@ -48,14 +48,13 @@ namespace VkRes
 		}
 
 		void CreateDescriptorSet(const int          _buffer_index,
-		                         vk::DescriptorSet& _set,
-		                         const int          _dst_binding)
+		                         vk::DescriptorSet& _set)
 		{
 			m_descriptor_sets[_buffer_index] = VkRes::CreateDescriptorSet(_set,
 			                                                              m_uniform_type,
 			                                                              &DescInfo(_buffer_index),
 			                                                              nullptr,
-			                                                              _dst_binding);
+			                                                              m_descriptor_set_layout_binding.binding);
 		}
 
 		void UpdateDescriptorSet(vk::Device _device, const uint32_t _index)
