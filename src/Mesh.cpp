@@ -74,11 +74,11 @@ void Mesh::Load(vk::Device                        _device,
 
 			if (index.texcoord_index != -1)
 			{
-			//	vertex.texCoord =
-			//	{
-			//		attrib.texcoords[2 * index.texcoord_index + 0],
-			//		1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-			//	};
+				vertex.texCoord =
+				{
+					attrib.texcoords[2 * index.texcoord_index + 0],
+					1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+				};
 			}
 
 			if (unique_vertices.count(vertex) == 0)

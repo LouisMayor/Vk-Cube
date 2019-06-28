@@ -1,6 +1,12 @@
 #include "include/Model.h"
 
-extern Logger g_Logger;
+extern VkGen::VkGenerator g_VkGenerator;
+extern Logger             g_Logger;
+
+Model::Model(vk::Device _device, vk::PhysicalDevice _physical_device, uint32_t _num_of_buffers)
+{
+	m_descriptor_sets.resize(_num_of_buffers);
+}
 
 void Model::LoadMesh(vk::Device         _device,
                      vk::PhysicalDevice _physical_device,
@@ -15,11 +21,52 @@ void Model::LoadMesh(vk::Device         _device,
 	g_Logger.Info<Model>(*this, "Model Loaded");
 }
 
-void Model::LoadTexture(std::string _dir, std::string _name)
-{}
+void Model::LoadTexture(VkRes::Command _cmd, std::string _dir, std::string _name)
+{
+	if (m_render_type == ERenderType::Diffuse)
+	{
+		Diffuse* val = std::get_if<Diffuse>(&m_textures);
+		if (val != nullptr)
+		{
+			val->DiffuseTexture = VkRes::Texture<VkRes::ETextureLoader::STB>(g_VkGenerator.Device(),
+			                                                                 g_VkGenerator.PhysicalDevice(),
+			                                                                 _cmd,
+			                                                                 g_VkGenerator.GraphicsQueue(),
+			                                                                 _dir,
+			                                                                 _name);
+		}
+	}
+}
+
+void Model::CreateDescriptorSetLayout(int _dst_binding)
+{
+	m_descriptor_set_layout_binding =
+			VkRes::CreateDescriptorSetLayout(vk::DescriptorType::eCombinedImageSampler,
+			                                 vk::ShaderStageFlagBits::eFragment,
+			                                 _dst_binding,
+			                                 nullptr);
+}
+
+void Model::CreateDescriptorSet(const int _buffer_index, vk::DescriptorSet& _set, const vk::Sampler& _sampler)
+{
+	m_descriptor_sets[_buffer_index] = VkRes::CreateDescriptorSet(_set,
+	                                                              vk::DescriptorType::eCombinedImageSampler,
+	                                                              nullptr,
+	                                                              &GetImageInfo(_sampler),
+	                                                              m_descriptor_set_layout_binding.binding);
+}
 
 void Model::Destroy(vk::Device _device)
 {
+	if (m_render_type == ERenderType::Diffuse)
+	{
+		Diffuse* val = std::get_if<Diffuse>(&m_textures);
+		if (val != nullptr)
+		{
+			val->DiffuseTexture.Destroy(_device);
+		}
+	}
+
 	m_mesh.Destroy(_device);
 }
 

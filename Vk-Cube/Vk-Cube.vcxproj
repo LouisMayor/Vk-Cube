@@ -206,10 +206,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\assets\shaders\Tranform.vert" />
+    <None Include="..\assets\shaders\Tranform_tex.vert" />
     <None Include="..\assets\shaders\triangle_no_mesh.frag" />
     <None Include="..\assets\shaders\triangle_no_mesh.vert" />
     <None Include="..\assets\shaders\ui.frag" />
     <None Include="..\assets\shaders\ui.vert" />
+    <None Include="..\assets\shaders\unlit_tex.frag" />
     <None Include="..\assets\shaders\unlit.frag" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

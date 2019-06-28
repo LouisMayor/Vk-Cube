@@ -1,6 +1,7 @@
 #pragma once
 
 #include "include\imgui-1.70\imgui.h"
+#include "include\stb-master\stb_image.h"
 
 namespace VkRes
 {
@@ -24,6 +25,9 @@ namespace VkRes
 		        const std::string  _dir  = "",
 		        const std::string  _name = "")
 		{
+			m_texture_name = _name;
+			m_texture_dir  = _dir;
+
 			CreateTexture(_device, _physical_device, _cmd, _queue);
 		}
 
@@ -56,17 +60,31 @@ namespace VkRes
 	private:
 		void CreateTexture(vk::Device _device, vk::PhysicalDevice _physical_device, VkRes::Command _cmd, vk::Queue _queue)
 		{
-			unsigned char* fontData;
-			int            texWidth, texHeight;
+			unsigned char* fontData = nullptr;
+			int            texWidth, texHeight, texChannels;
+			vk::DeviceSize upload_size = 0;
+			stbi_uc*       pixels      = nullptr;
 
 			if constexpr (loader == ETextureLoader::Imgui)
 			{
 				ImGuiIO& io = ImGui::GetIO();
 				io.Fonts->GetTexDataAsRGBA32(&fontData, &texWidth, &texHeight);
+				upload_size = texWidth * texHeight * 4 * sizeof(char);
+			}
+			else if constexpr (loader == ETextureLoader::STB)
+			{
+				const std::string fullpath = m_texture_dir + m_texture_name;
+				pixels                     = stbi_load(fullpath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+				upload_size                = texWidth * texHeight * 4;
+
+				if (pixels == nullptr)
+				{
+					g_Logger.Error("Failed to load " + fullpath);
+					throw std::runtime_error("Failed to load " + fullpath);
+				}
 			}
 
-			const vk::DeviceSize upload_size = texWidth * texHeight * 4 * sizeof(char);
-			m_miplevels                      = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
+			m_miplevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
 
 			const auto image_data = VkRes::CreateImage(_device,
 			                                           _physical_device,
@@ -104,7 +122,9 @@ namespace VkRes
 			const auto map_result = _device.mapMemory(staging_buffer_mem, 0, VK_WHOLE_SIZE, {}, &mapped);
 			assert(("Failed to map memory", map_result == vk::Result::eSuccess));
 
-			std::memcpy(mapped, fontData, upload_size);
+			std::memcpy(mapped, loader == ETextureLoader::Imgui ?
+				                    fontData :
+				                    pixels, upload_size);
 
 			// unmap
 			if (mapped != nullptr)
@@ -115,37 +135,42 @@ namespace VkRes
 
 			const auto cmd_buffer = _cmd.BeginSingleTimeCmds(_device);
 
+			VkRes::TransitionImageLayout(cmd_buffer,
+			                             m_texture_image,
+			                             vk::Format::eR8G8B8A8Unorm,
+			                             vk::ImageLayout::eUndefined,
+			                             vk::ImageLayout::eTransferDstOptimal,
+			                             m_miplevels);
+
+			const vk::BufferImageCopy copy_region =
+			{
+				0,
+				0,
+				0,
+				{vk::ImageAspectFlagBits::eColor, 0, 0, 1},
+				{},
+				{static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), 1}
+			};
+
+			cmd_buffer.copyBufferToImage(staging_buffer,
+			                             m_texture_image,
+			                             vk::ImageLayout::eTransferDstOptimal,
+			                             1,
+			                             &copy_region);
+
 			if constexpr (loader == ETextureLoader::Imgui)
 			{
-				VkRes::TransitionImageLayout(cmd_buffer,
-				                             m_texture_image,
-				                             vk::Format::eR8G8B8A8Unorm,
-				                             vk::ImageLayout::eUndefined,
-				                             vk::ImageLayout::eTransferDstOptimal,
-				                             m_miplevels);
-
-				const vk::BufferImageCopy copy_region =
-				{
-					0,
-					0,
-					0,
-					{vk::ImageAspectFlagBits::eColor, 0, 0, 1},
-					{},
-					{static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), 1}
-				};
-
-				cmd_buffer.copyBufferToImage(staging_buffer,
-				                             m_texture_image,
-				                             vk::ImageLayout::eTransferDstOptimal,
-				                             1,
-				                             &copy_region);
-
 				VkRes::TransitionImageLayout(cmd_buffer,
 				                             m_texture_image,
 				                             vk::Format::eR8G8B8A8Unorm,
 				                             vk::ImageLayout::eTransferDstOptimal,
 				                             vk::ImageLayout::eShaderReadOnlyOptimal,
 				                             1);
+			}
+			else if constexpr (loader == ETextureLoader::STB)
+			{
+				stbi_image_free(pixels);
+				pixels = nullptr;
 			}
 
 			_cmd.EndSingleTimeCmds(_device, cmd_buffer, _queue);
@@ -195,7 +220,7 @@ namespace VkRes
 			int32_t mipWidth  = _width;
 			int32_t mipHeight = _height;
 
-			for (uint32_t i = 1 ; i < m_miplevels ; i++)
+			for (uint32_t i = 1; i < m_miplevels; i++)
 			{
 				barrier.subresourceRange.setBaseMipLevel(i - 1);
 				barrier.setOldLayout(vk::ImageLayout::eTransferDstOptimal);
@@ -283,7 +308,7 @@ namespace VkRes
 			}
 
 			barrier.subresourceRange.setBaseMipLevel(m_miplevels - 1);
-			barrier.setOldLayout(vk::ImageLayout::eTransferSrcOptimal);
+			barrier.setOldLayout(vk::ImageLayout::eTransferDstOptimal);
 			barrier.setNewLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
 			barrier.setSrcAccessMask(vk::AccessFlagBits::eTransferRead);
 			barrier.setDstAccessMask(vk::AccessFlagBits::eShaderRead);
@@ -300,6 +325,9 @@ namespace VkRes
 
 			_cmd.EndSingleTimeCmds(_device, cmd_buffer, _queue);
 		}
+
+		std::string m_texture_name;
+		std::string m_texture_dir;
 
 		vk::Image        m_texture_image;
 		vk::DeviceMemory m_texture_image_memory;
