@@ -2,7 +2,6 @@
 #include "include\imgui-1.70\imgui.h"
 #include "include/glfw-3.2.1.bin.WIN32/include/GLFW/glfw3.h"
 
-
 void UI::Destroy(vk::Device _device)
 {
 	ImGui::DestroyContext();
@@ -57,6 +56,12 @@ void UI::Recreate(vk::Device _device, uint32_t _width, uint32_t _height, GLFWwin
 	m_index_buffer.Destroy(_device);
 }
 
+// displaying list text
+std::vector<std::string> demo_values;
+std::vector<const char*> listbox_items;
+const char** demo_list;
+int demo_selection;
+
 void UI::Init(uint32_t _width, uint32_t _height, GLFWwindow* _window)
 {
 	m_width  = static_cast<float>(_width);
@@ -73,6 +78,16 @@ void UI::Init(uint32_t _width, uint32_t _height, GLFWwindow* _window)
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.DisplaySize = ImVec2(m_width, m_height);
+
+	demo_values.resize(static_cast<int>(CubeSettings::CubeDemos::NumOf));
+
+	CubeSettings::CubeDemos val = CubeSettings::CubeDemos::Textured;
+	demo_values[static_cast<int>(val)] = CubeSettings::Instance()->ToString(val);
+	val = CubeSettings::CubeDemos::Shader;
+	demo_values[static_cast<int>(val)] = CubeSettings::Instance()->ToString(val);
+
+	std::transform(demo_values.begin(), demo_values.end(), std::back_inserter(listbox_items), std::mem_fn(&std::string::c_str));
+	demo_list = &listbox_items.front();
 }
 
 void UI::LoadResources(vk::Device              _device,
@@ -222,10 +237,13 @@ void UI::PrepNextFrame(float _delta, float _total_time)
 	std::string time = "time: " + std::to_string(_total_time);
 	ImGui::TextUnformatted(time.c_str());
 
+	demo_selection = static_cast<int>(CubeSettings::Instance()->current_demo);
+
 	ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiSetCond_FirstUseEver);
 	ImGui::Begin("Settings");
 	ImGui::Checkbox("Enable Multi-sampling", &local_settings.use_msaa);
 	ImGui::SliderInt("Sample Level", &local_settings.sample_level, 2, 8);
+	ImGui::ListBox("Demos", &demo_selection, demo_list, demo_values.size(), 4);
 	ImGui::End();
 
 	ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
@@ -237,16 +255,18 @@ void UI::PrepNextFrame(float _delta, float _total_time)
 
 void UI::UpdateSettings()
 {
-	if (Settings::Instance()->sample_level != local_settings.sample_level)
+	CubeSettings::Instance()->SetDemo(CubeSettings::CubeDemos(demo_selection));
+
+	if (CubeSettings::Instance()->sample_level != local_settings.sample_level)
 	{
 		if (local_settings.sample_level > 0)
 		{
-			Settings::Instance()->SetSampleCount(local_settings.sample_level);
+			CubeSettings::Instance()->SetSampleCount(local_settings.sample_level);
 		}
-		local_settings.sample_level = Settings::Instance()->sample_level;
+		local_settings.sample_level = CubeSettings::Instance()->sample_level;
 	}
 
-	Settings::Instance()->SetMSAA(local_settings.use_msaa);
+	CubeSettings::Instance()->SetMSAA(local_settings.use_msaa);
 }
 
 void UI::Update(vk::Device _device, vk::PhysicalDevice _physical_device)

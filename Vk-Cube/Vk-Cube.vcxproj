@@ -153,6 +153,7 @@
   <ItemGroup>
     <ClCompile Include="..\src\App.cpp" />
     <ClCompile Include="..\src\CubeDemo.cpp" />
+    <ClCompile Include="..\src\CubeSettings.cpp" />
     <ClCompile Include="..\src\include\imgui-1.70\imgui.cpp" />
     <ClCompile Include="..\src\include\imgui-1.70\imgui_demo.cpp" />
     <ClCompile Include="..\src\include\imgui-1.70\imgui_draw.cpp" />
@@ -169,11 +170,13 @@
     <ClInclude Include="..\src\include\Buffer.h" />
     <ClInclude Include="..\src\include\Command.h" />
     <ClInclude Include="..\src\include\CubeDemo.h" />
+    <ClInclude Include="..\src\include\CubeDemoSettings.h" />
     <ClInclude Include="..\src\include\Demo.h" />
     <ClInclude Include="..\src\include\DepthBuffer.h" />
     <ClInclude Include="..\src\include\DescriptorPool.h" />
     <ClInclude Include="..\src\include\DescriptorSet.h" />
     <ClInclude Include="..\src\include\DescriptorSetLayout.h" />
+    <ClInclude Include="..\src\include\Event.hpp" />
     <ClInclude Include="..\src\include\Fence.h" />
     <ClInclude Include="..\src\include\Flags.h" />
     <ClInclude Include="..\src\include\FrameBuffer.h" />

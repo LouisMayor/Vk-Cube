@@ -37,6 +37,9 @@ namespace VkRes
 			{
 				_device.destroyDescriptorSetLayout(desc);
 			}
+
+			m_layouts.clear();
+			m_layout_bindings.clear();
 		}
 
 		void Add(vk::DescriptorSetLayoutBinding _layout)

@@ -1,25 +1,13 @@
 #include "include/Settings.h"
 
-std::unique_ptr<Settings> Settings::m_instance = std::make_unique<Settings>();
-
-bool Settings::Updated(bool _has_responded = false)
+Settings::SettingUpdateFlags Settings::Updated(bool _has_responded = false)
 {
-	const bool tmp = m_updated;
+	const SettingUpdateFlags tmp = m_updated;
 	if (_has_responded)
 	{
-		m_updated = false;
+		m_updated = SettingUpdateFlags::None;
 	}
 	return tmp;
-}
-
-Settings* Settings::Instance()
-{
-	if (m_instance == nullptr)
-	{
-		m_instance = std::make_unique<Settings>();
-	}
-
-	return m_instance.get();
 }
 
 void Settings::SetMSAA(const bool _value)
@@ -29,7 +17,7 @@ void Settings::SetMSAA(const bool _value)
 
 	if (tmp != use_msaa)
 	{
-		m_updated = true;
+		m_updated |= SettingUpdateFlags::SwapchainRecreation;
 	}
 }
 
@@ -53,7 +41,7 @@ void Settings::SetSampleCount(const int _value)
 
 	if (tmp != sample_level)
 	{
-		m_updated = true;
+		m_updated |= SettingUpdateFlags::SwapchainRecreation;
 	}
 }
 

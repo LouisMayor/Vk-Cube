@@ -96,4 +96,7 @@ protected:
 	std::string m_shader_directory;
 	std::string m_texture_directory;
 	std::string m_model_directory;
+
+	std::string m_current_vert;
+	std::string m_current_frag;
 };

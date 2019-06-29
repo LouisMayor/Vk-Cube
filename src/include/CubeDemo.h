@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Demo.h"
-#include "Settings.h"
+#include "CubeDemoSettings.h"
 #include "UI.h"
 #include "Model.h"
 
@@ -9,10 +9,11 @@ class VkCubeDemo : public VkDemo
 {
 public:
 
-	VkCubeDemo() = default;
+	VkCubeDemo();
 
 	explicit VkCubeDemo(const VkApp& _app_instance) : VkDemo(_app_instance)
-	{}
+	{
+	}
 
 	VkCubeDemo(const VkCubeDemo& _other) = delete;
 
@@ -25,6 +26,8 @@ public:
 	~VkCubeDemo() override
 	{ }
 
+	static VkCubeDemo* Instance();
+
 	void Setup() override;
 
 	void Run() override;
@@ -36,7 +39,11 @@ public:
 	                                                    const VkDebugUtilsMessengerCallbackDataEXT* _p_callback_data,
 	                                                    void*                                       _p_user_data);
 
+	static void ChangeCubeDemo(CubeSettings::CubeDemos);
+
 private:
+
+	void RecreateDescriptors();
 
 	void CreateDescriptorLayouts() override;
 
@@ -116,8 +123,16 @@ private:
 
 	UI m_ui_instance;
 
+	static VkCubeDemo* m_instance;
+
 	float m_total_time;
 	float m_frame_delta;
 
-	bool m_settings_updated = false;
+	std::string m_texture_vert = "Tranform_tex.vert";
+	std::string m_texture_frag = "unlit_tex.frag";
+
+	std::string m_shader_vert = "Tranform.vert";
+	std::string m_shader_frag = "unlit.frag";
+
+	Settings::SettingUpdateFlags m_settings_updated = Settings::SettingUpdateFlags::None;
 };

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "VulkanObjects.h"
-#include "Settings.h"
+#include "CubeDemoSettings.h"
 
 class UI
 {
@@ -40,8 +40,8 @@ private:
 
 	void UpdateSettings();
 
-	Settings local_settings;
-	bool     load_frame = true;
+	CubeSettings local_settings;
+	bool         load_frame = true;
 
 	vk::DescriptorPool                           m_desc_pool;
 	vk::DescriptorSetLayout                      m_desc_set_layout;
