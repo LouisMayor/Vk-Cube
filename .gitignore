@@ -3,6 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# cache pipelines
+Vk-Cube/pipeline caches/
+
 # non-shader assets
 assets/textures/
 assets/models/
