@@ -13,7 +13,7 @@
 
 #include "VulkanObjects.h"
 
-struct Vertex
+struct VertexPosUV
 {
 	glm::vec3 pos;
 	glm::vec3 color;
@@ -23,7 +23,7 @@ struct Vertex
 	{
 		vk::VertexInputBindingDescription bindingDescription = {};
 		bindingDescription.binding                           = 0;
-		bindingDescription.stride                            = sizeof(Vertex);
+		bindingDescription.stride                            = sizeof(VertexPosUV);
 		bindingDescription.inputRate                         = vk::VertexInputRate::eVertex;
 
 		return bindingDescription;
@@ -37,22 +37,22 @@ struct Vertex
 		attributeDescriptions[0].binding  = 0;
 		attributeDescriptions[0].location = 0;
 		attributeDescriptions[0].format   = vk::Format::eR32G32B32Sfloat;
-		attributeDescriptions[0].offset   = offsetof(Vertex, pos);
+		attributeDescriptions[0].offset   = offsetof(VertexPosUV, pos);
 
 		attributeDescriptions[1].binding  = 0;
 		attributeDescriptions[1].location = 1;
 		attributeDescriptions[1].format   = vk::Format::eR32G32B32Sfloat;
-		attributeDescriptions[1].offset   = offsetof(Vertex, color);
+		attributeDescriptions[1].offset   = offsetof(VertexPosUV, color);
 
 		attributeDescriptions[2].binding  = 0;
 		attributeDescriptions[2].location = 2;
 		attributeDescriptions[2].format   = vk::Format::eR32G32Sfloat;
-		attributeDescriptions[2].offset   = offsetof(Vertex, texCoord);
+		attributeDescriptions[2].offset   = offsetof(VertexPosUV, texCoord);
 
 		return attributeDescriptions;
 	}
 
-	bool operator==(const Vertex& other) const
+	bool operator==(const VertexPosUV& other) const
 	{
 		return (pos == other.pos && color == other.color && texCoord == other.texCoord);
 	}
@@ -60,9 +60,9 @@ struct Vertex
 
 namespace std
 {
-	template <> struct hash<Vertex>
+	template <> struct hash<VertexPosUV>
 	{
-		size_t operator()(Vertex const& vertex) const
+		size_t operator()(VertexPosUV const& vertex) const
 		{
 			return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (hash<glm::vec2>()(
 				vertex.texCoord) << 1);

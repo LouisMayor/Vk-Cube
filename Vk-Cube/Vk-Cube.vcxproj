@@ -191,6 +191,7 @@
     <ClInclude Include="..\src\include\Logger.h" />
     <ClInclude Include="..\src\include\Mesh.h" />
     <ClInclude Include="..\src\include\Model.h" />
+    <ClInclude Include="..\src\include\PipelineCache.h" />
     <ClInclude Include="..\src\include\RenderPass.h" />
     <ClInclude Include="..\src\include\RenderTarget.h" />
     <ClInclude Include="..\src\include\Sampler.h" />
@@ -201,13 +202,17 @@
     <ClInclude Include="..\src\include\Texture.h" />
     <ClInclude Include="..\src\include\UI.h" />
     <ClInclude Include="..\src\include\UniformBuffer.h" />
-    <ClInclude Include="..\src\include\Vertex.h" />
+    <ClInclude Include="..\src\include\VertexPosUV.h" />
+    <ClInclude Include="..\src\include\VertexPosUVNormal.h" />
+    <ClInclude Include="..\src\include\VertexTypes.h" />
     <ClInclude Include="..\src\include\Vk-Generator\VkGenerator.hpp" />
     <ClInclude Include="..\src\include\Vk-Generator\VkGenerator.ipp" />
     <ClInclude Include="..\src\include\VulkanHelpers.h" />
     <ClInclude Include="..\src\include\VulkanObjects.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\assets\shaders\forward_tex.frag" />
+    <None Include="..\assets\shaders\forward_Tranform_tex.vert" />
     <None Include="..\assets\shaders\Tranform.vert" />
     <None Include="..\assets\shaders\Tranform_tex.vert" />
     <None Include="..\assets\shaders\triangle_no_mesh.frag" />

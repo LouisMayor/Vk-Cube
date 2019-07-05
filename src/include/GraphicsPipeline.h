@@ -1,5 +1,7 @@
 #pragma once
 
+#include "PipelineCache.h"
+
 namespace VkRes
 {
 	class GraphicsPipeline
@@ -10,6 +12,11 @@ namespace VkRes
 
 		void Destroy(vk::Device _device)
 		{
+			if (m_cache.HasCache())
+			{
+				m_cache.Destroy(_device);
+			}
+
 			if (m_layout != nullptr)
 			{
 				_device.destroyPipelineLayout(m_layout);
@@ -101,7 +108,9 @@ namespace VkRes
 				VK_FALSE,
 				VK_FALSE,
 				vk::PolygonMode::eFill,
-				_transparent ? vk::CullModeFlagBits::eNone : vk::CullModeFlagBits::eBack,
+				_transparent ?
+					vk::CullModeFlagBits::eNone :
+					vk::CullModeFlagBits::eBack,
 				vk::FrontFace::eClockwise,
 				VK_FALSE,
 				0.0f,
@@ -211,7 +220,7 @@ namespace VkRes
 			has_set_pipline_layout = true;
 		}
 
-		void CreateGraphicPipeline(vk::Device _device, vk::RenderPass _render_pass)
+		void CreatePipeline(vk::Device _device, vk::RenderPass _render_pass, std::string _pipeline_dir, std::string _pipeline_name)
 		{
 			if (!LogAndCheckConstructionState())
 			{
@@ -248,10 +257,20 @@ namespace VkRes
 				0
 			};
 
-			const auto result = _device.createGraphicsPipelines(nullptr, 1, &m_graphics_pipeline_create_info, nullptr,
+			m_cache.Create(_device, _pipeline_dir, _pipeline_name);
+
+			const auto result = _device.createGraphicsPipelines(m_cache.Cache(),
+			                                                    1,
+			                                                    &m_graphics_pipeline_create_info,
+			                                                    nullptr,
 			                                                    &m_pipeline);
 
 			assert(("Failed to create a graphics pipeline", result == vk::Result::eSuccess));
+
+			if (!m_cache.HasFile(_pipeline_dir, _pipeline_name))
+			{
+				m_cache.WriteToFile(_device, _pipeline_dir, _pipeline_name);
+			}
 		}
 
 		[[nodiscard]] vk::PipelineLayout& PipelineLayout()
@@ -304,7 +323,7 @@ namespace VkRes
 			return succesfully_constructed;
 		}
 
-		// Input & Vertex
+		// Input & VertexPosUVNormal
 		vk::PipelineInputAssemblyStateCreateInfo         m_input_assembly_state_create_info;
 		vk::PipelineVertexInputStateCreateInfo           m_vertex_input_state_create_info;
 		vk::VertexInputBindingDescription                m_vertex_binding_desc;
@@ -333,6 +352,8 @@ namespace VkRes
 		vk::GraphicsPipelineCreateInfo m_graphics_pipeline_create_info;
 		vk::PipelineLayout             m_layout;
 		vk::Pipeline                   m_pipeline;
+
+		VkRes::PipelineCache m_cache;
 
 		// Stage tracking
 		bool has_set_input_assembler = false;

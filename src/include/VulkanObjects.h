@@ -12,6 +12,7 @@ namespace VkRes
 
 	enum EDataUsageFlags : UINT8
 	{
+		Once = 1 << 1,
 		PerFrame = 1 << 1,
 		OnResize = 1 << 2
 	};

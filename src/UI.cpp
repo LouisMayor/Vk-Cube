@@ -59,8 +59,8 @@ void UI::Recreate(vk::Device _device, uint32_t _width, uint32_t _height, GLFWwin
 // displaying list text
 std::vector<std::string> demo_values;
 std::vector<const char*> listbox_items;
-const char** demo_list;
-int demo_selection;
+const char**             demo_list;
+int                      demo_selection;
 
 void UI::Init(uint32_t _width, uint32_t _height, GLFWwindow* _window)
 {
@@ -76,14 +76,16 @@ void UI::Init(uint32_t _width, uint32_t _height, GLFWwindow* _window)
 	style.Colors[ImGuiCol_Header]        = ImVec4(1.0f, 0.0f, 0.0f, 0.4f);
 	style.Colors[ImGuiCol_CheckMark]     = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
 
-	ImGuiIO& io = ImGui::GetIO();
+	ImGuiIO& io    = ImGui::GetIO();
 	io.DisplaySize = ImVec2(m_width, m_height);
 
 	demo_values.resize(static_cast<int>(CubeSettings::CubeDemos::NumOf));
 
-	CubeSettings::CubeDemos val = CubeSettings::CubeDemos::Textured;
+	CubeSettings::CubeDemos val        = CubeSettings::CubeDemos::Textured;
 	demo_values[static_cast<int>(val)] = CubeSettings::Instance()->ToString(val);
-	val = CubeSettings::CubeDemos::Shader;
+	val                                = CubeSettings::CubeDemos::Shader;
+	demo_values[static_cast<int>(val)] = CubeSettings::Instance()->ToString(val);
+	val                                = CubeSettings::CubeDemos::Lit;
 	demo_values[static_cast<int>(val)] = CubeSettings::Instance()->ToString(val);
 
 	std::transform(demo_values.begin(), demo_values.end(), std::back_inserter(listbox_items), std::mem_fn(&std::string::c_str));
@@ -93,6 +95,7 @@ void UI::Init(uint32_t _width, uint32_t _height, GLFWwindow* _window)
 void UI::LoadResources(vk::Device              _device,
                        vk::PhysicalDevice      _physical_device,
                        std::string_view        _shader_dir,
+                       std::string_view        _pipeline_cache_dir,
                        VkRes::Command          _cmd,
                        vk::RenderPass          _pass,
                        vk::Queue               _queue,
@@ -101,7 +104,7 @@ void UI::LoadResources(vk::Device              _device,
 	ImGuiIO& io = ImGui::GetIO();
 
 	m_font_tex = VkRes::Texture<VkRes::ETextureLoader::Imgui>(_device, _physical_device, _cmd, _queue);
-	m_sampler = VkRes::Sampler<vk::Filter::eLinear>(_device, vk::SamplerAddressMode::eClampToEdge, 0.0f, VK_FALSE, 0.0f);
+	m_sampler  = VkRes::Sampler<vk::Filter::eLinear>(_device, vk::SamplerAddressMode::eClampToEdge, 0.0f, VK_FALSE, 0.0f);
 
 	// Descriptor Pool Code
 	const std::vector<vk::DescriptorPoolSize> pool_sizes =
@@ -216,7 +219,7 @@ void UI::LoadResources(vk::Device              _device,
 	m_pipeline.SetShaders(stages);
 	m_pipeline.SetPushConstants<UIPushConstantData>(0, vk::ShaderStageFlagBits::eVertex);
 	m_pipeline.CreatePipelineLayout(_device, &m_desc_set_layout, 1, 1);
-	m_pipeline.CreateGraphicPipeline(_device, _pass);
+	m_pipeline.CreatePipeline(_device, _pass, _pipeline_cache_dir.data(), "IMGUI_UI");
 }
 
 void UI::PrepNextFrame(float _delta, float _total_time)
@@ -306,7 +309,7 @@ void UI::Update(vk::Device _device, vk::PhysicalDevice _physical_device)
 	ImDrawVert* vtxDst = (ImDrawVert*)m_vertex_buffer.Data();
 	ImDrawIdx*  idxDst = (ImDrawIdx*)m_index_buffer.Data();
 
-	for (int i = 0 ; i < imDrawData->CmdListsCount ; ++i)
+	for (int i = 0; i < imDrawData->CmdListsCount; ++i)
 	{
 		const ImDrawList* cmd_list = imDrawData->CmdLists[i];
 		std::memcpy(vtxDst, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
@@ -360,10 +363,10 @@ void UI::Draw(VkRes::Command _cmd, int _cmd_index)
 		cmd_buffer.bindVertexBuffers(0, 1, &m_vertex_buffer.BufferData(), offsets);
 		cmd_buffer.bindIndexBuffer(m_index_buffer.BufferData(), 0, vk::IndexType::eUint16);
 
-		for (int i = 0 ; i < imDrawData->CmdListsCount ; ++i)
+		for (int i = 0; i < imDrawData->CmdListsCount; ++i)
 		{
 			const ImDrawList* cmd_list = imDrawData->CmdLists[i];
-			for (int j = 0 ; j < cmd_list->CmdBuffer.Size ; ++j)
+			for (int j = 0; j < cmd_list->CmdBuffer.Size; ++j)
 			{
 				const ImDrawCmd* cmd          = &cmd_list->CmdBuffer[j];
 				vk::Rect2D       scissor_rect =

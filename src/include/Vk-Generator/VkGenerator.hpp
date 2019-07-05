@@ -26,12 +26,73 @@ namespace VkGen
 		std::vector<vk::PresentModeKHR>   presentModes;
 	};
 
+	struct DeviceInfo
+	{
+		vk::PhysicalDeviceProperties device_properties;
+	};
+
 	enum class ELibrary
 	{
 		GLFW,
 		SDL2,
 		NOT_SET,
 	};
+
+	static std::string DeviceTypeToString(vk::PhysicalDeviceType _device_type)
+	{
+		switch (_device_type)
+		{
+		case vk::PhysicalDeviceType::eDiscreteGpu:
+		{
+			return "Discrete GPU";
+		}
+		case vk::PhysicalDeviceType::eIntegratedGpu:
+		{
+			return "Integrated GPU";
+		}
+		case vk::PhysicalDeviceType::eVirtualGpu:
+		{
+			return "Virtual GPU";
+		}
+		case vk::PhysicalDeviceType::eCpu:
+		{
+			return "CPU";
+		}
+		default:
+		{
+			return "Other";
+		}
+		}
+	}
+
+	// http://vulkan.gpuinfo.org/
+	// https://www.reddit.com/r/vulkan/comments/4ta9nj/is_there_a_comprehensive_list_of_the_names_and/
+	static std::string VendorIDToString(uint32_t _vendor_id)
+	{
+		switch (_vendor_id)
+		{
+		case 0x1002:
+		{
+			return "AMD";
+		}
+		case 0x10DE:
+		{
+			return "Nvidia";
+		}
+		case 0x8086:
+		{
+			return "Intel";
+		}
+		case 0x13B5:
+		{
+			return "Arm";
+		}
+		default:
+		{
+			return "Unrecognised";
+		}
+		}
+	}
 
 #if defined(SDL_VERSION_ATLEAST)
 	// SDL
@@ -87,7 +148,9 @@ namespace VkGen
 		void DisplayWindow(VkBool32);
 
 		/* Note: This isn't required, as VkGenerator does provide a default function callback */
-		void AddValidationLayerCallback( VkBool32( __stdcall *func_ptr )( VkDebugUtilsMessageSeverityFlagBitsEXT, VkDebugUtilsMessageTypeFlagsEXT, const VkDebugUtilsMessengerCallbackDataEXT*, void* ) );
+		void AddValidationLayerCallback(VkBool32 ( __stdcall *func_ptr )(VkDebugUtilsMessageSeverityFlagBitsEXT     ,
+		                                                                 VkDebugUtilsMessageTypeFlagsEXT            ,
+		                                                                 const VkDebugUtilsMessengerCallbackDataEXT*, void*));
 
 		void RefreshSwapchainDetails();
 
@@ -206,6 +269,11 @@ namespace VkGen
 			return m_queue_family_indices;
 		}
 
+		DeviceInfo& DeviceInfomation()
+		{
+			return m_device_info;
+		}
+
 		/* public members */
 	public:
 
@@ -217,6 +285,7 @@ namespace VkGen
 
 		SwapChainSupportDetails m_swapchain_support;
 		QueueFamilyIndices      m_queue_family_indices;
+		DeviceInfo              m_device_info;
 
 		// potentially passed in via caller and not stored with VkGenerator
 		vk::Queue m_graphics_queue;
@@ -225,8 +294,9 @@ namespace VkGen
 		vk::SurfaceKHR m_surface;
 		WindowHandle*  m_window_handle;
 
-		VkBool32(__stdcall *m_validation_callback )( VkDebugUtilsMessageSeverityFlagBitsEXT, VkDebugUtilsMessageTypeFlagsEXT, const
-							   VkDebugUtilsMessengerCallbackDataEXT*, void* );
+		VkBool32 (__stdcall *m_validation_callback )(VkDebugUtilsMessageSeverityFlagBitsEXT, VkDebugUtilsMessageTypeFlagsEXT,
+		                                             const
+		                                             VkDebugUtilsMessengerCallbackDataEXT*, void*);
 
 		int m_buffer_resolution[2];
 

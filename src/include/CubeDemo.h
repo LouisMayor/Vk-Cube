@@ -88,6 +88,7 @@ private:
 	struct CubeData
 	{
 		glm::mat4x4 mvp;
+		glm::mat4x4 world;
 	};
 
 	struct TimeData
@@ -98,6 +99,11 @@ private:
 	struct ViewportData
 	{
 		glm::vec2 dims;
+	};
+
+	struct DirectionalLight
+	{
+		glm::vec3 direction;
 	};
 
 	VkRes::Swapchain                m_swapchain;
@@ -117,6 +123,7 @@ private:
 	std::vector<VkRes::Semaphore>   m_render_finished_semaphores;
 
 	VkRes::Sampler<vk::Filter::eLinear>                                  m_sampler;
+	VkRes::UniformBuffer<DirectionalLight, VkRes::EDataUsageFlags::Once> m_dir_light_ubo;
 	VkRes::UniformBuffer<ViewportData, VkRes::EDataUsageFlags::OnResize> m_view_ubo;
 	VkRes::UniformBuffer<CubeData, VkRes::EDataUsageFlags::PerFrame>     m_cube_ubo;
 	std::vector<Model>                                                   m_render_list;
@@ -133,6 +140,9 @@ private:
 
 	std::string m_shader_vert = "Tranform.vert";
 	std::string m_shader_frag = "unlit.frag";
+
+	std::string m_tex_lit_vert = "forward_Tranform_tex.vert";
+	std::string m_tex_lit_frag = "forward_tex.frag";
 
 	Settings::SettingUpdateFlags m_settings_updated = Settings::SettingUpdateFlags::None;
 };

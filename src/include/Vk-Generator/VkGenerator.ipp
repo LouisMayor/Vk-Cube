@@ -215,62 +215,6 @@ namespace VkGen
 				<< std::endl;
 	}
 
-	// http://vulkan.gpuinfo.org/
-	// https://www.reddit.com/r/vulkan/comments/4ta9nj/is_there_a_comprehensive_list_of_the_names_and/
-	inline std::string VendorIDToString(uint32_t _vendor_id)
-	{
-		switch (_vendor_id)
-		{
-			case 0x1002:
-			{
-				return "AMD";
-			}
-			case 0x10DE:
-			{
-				return "Nvidia";
-			}
-			case 0x8086:
-			{
-				return "Intel";
-			}
-			case 0x13B5:
-			{
-				return "Arm";
-			}
-			default:
-			{
-				return "Unrecognised";
-			}
-		}
-	}
-
-	inline std::string DeviceTypeToString(vk::PhysicalDeviceType _device_type)
-	{
-		switch (_device_type)
-		{
-			case vk::PhysicalDeviceType::eDiscreteGpu:
-			{
-				return "Discrete GPU";
-			}
-			case vk::PhysicalDeviceType::eIntegratedGpu:
-			{
-				return "Integrated GPU";
-			}
-			case vk::PhysicalDeviceType::eVirtualGpu:
-			{
-				return "Virtual GPU";
-			}
-			case vk::PhysicalDeviceType::eCpu:
-			{
-				return "CPU";
-			}
-			default:
-			{
-				return "Other";
-			}
-		}
-	}
-
 	inline void VkGenerator::LogDeviceInfo()
 	{
 		if (!m_log_device_info)
@@ -278,15 +222,13 @@ namespace VkGen
 			return;
 		}
 
-		auto deviceProperties = m_physical_device.getProperties();
-
 		std::clog
 				<< "Device Information: "
-				<< DeviceTypeToString(deviceProperties.deviceType)
+				<< DeviceTypeToString(m_device_info.device_properties.deviceType)
 				<< " "
-				<< VendorIDToString(deviceProperties.vendorID)
+				<< VendorIDToString(m_device_info.device_properties.vendorID)
 				<< " "
-				<< deviceProperties.deviceName
+				<< m_device_info.device_properties.deviceName
 				<< std::endl;
 	}
 
@@ -435,6 +377,8 @@ namespace VkGen
 		}
 
 		assert(( "failed to find suitable physical device", m_physical_device != nullptr ));
+
+		m_device_info.device_properties = m_physical_device.getProperties();
 
 		LogDeviceInfo();
 	}

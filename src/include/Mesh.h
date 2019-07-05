@@ -3,7 +3,7 @@
 #include <string>
 #include "VulkanObjects.h"
 #include <tiny_obj_loader.h>
-#include "include/Vertex.h"
+#include "VertexTypes.h"
 
 class Mesh
 {
@@ -27,7 +27,7 @@ public:
 	size_t index_count;
 
 private:
-	std::vector<std::vector<Vertex>>   m_vertices;
+	std::vector<std::vector<VertexPosUVNormal>>   m_vertices;
 	std::vector<std::vector<uint32_t>> m_indices;
 	std::vector<VkRes::Buffer>         m_vertex_buffer;
 	std::vector<VkRes::Buffer>         m_index_buffer;

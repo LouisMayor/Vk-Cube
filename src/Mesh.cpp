@@ -23,7 +23,7 @@ void Mesh::MapData(vk::Device _device, int _shape_count)
 		auto indi = m_index_buffer[index];
 
 		vert.Map(_device);
-		std::memcpy(vert.Data(), m_vertices[0].data(), m_vertices[0].size() * sizeof(Vertex));
+		std::memcpy(vert.Data(), m_vertices[0].data(), m_vertices[0].size() * sizeof(VertexPosUVNormal));
 		vert.Unmap(_device);
 
 		indi.Map(_device);
@@ -48,7 +48,7 @@ void Mesh::Load(vk::Device                        _device,
 		throw std::runtime_error(err);
 	}
 
-	std::unordered_map<Vertex, uint32_t> unique_vertices = {};
+	std::unordered_map<VertexPosUVNormal, uint32_t> unique_vertices = {};
 
 	m_vertices.resize(_shapes.size());
 	m_indices.resize(_shapes.size());
@@ -58,7 +58,7 @@ void Mesh::Load(vk::Device                        _device,
 	{
 		for (const auto& index : shape.mesh.indices)
 		{
-			Vertex vertex = {};
+			VertexPosUVNormal vertex = {};
 
 			if (index.vertex_index != -1)
 			{
@@ -78,6 +78,16 @@ void Mesh::Load(vk::Device                        _device,
 				{
 					attrib.texcoords[2 * index.texcoord_index + 0],
 					1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+				};
+			}
+
+			if (index.normal_index != -1)
+			{
+				vertex.normal =
+				{
+					attrib.normals[3 * index.normal_index + 2],
+					attrib.normals[3 * index.normal_index + 1],
+					attrib.normals[3 * index.normal_index + 0]
 				};
 			}
 
@@ -107,7 +117,7 @@ void Mesh::Load(vk::Device                        _device,
 
 	for (size_t i = 0; i < _shapes.size(); i++)
 	{
-		m_vertex_buffer[i] = VkRes::Buffer(_device, _physical_device, m_vertices[0].size() * sizeof(Vertex), vk::BufferUsageFlagBits::eVertexBuffer);
+		m_vertex_buffer[i] = VkRes::Buffer(_device, _physical_device, m_vertices[0].size() * sizeof(VertexPosUVNormal), vk::BufferUsageFlagBits::eVertexBuffer);
 		m_index_buffer[i] = VkRes::Buffer(_device, _physical_device, m_indices[0].size() * sizeof(int), vk::BufferUsageFlagBits::eIndexBuffer);
 	}
 

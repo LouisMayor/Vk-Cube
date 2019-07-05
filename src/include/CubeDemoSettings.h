@@ -22,6 +22,7 @@ public:
 	{
 		Textured,
 		Shader,
+		Lit,
 		NumOf
 	};
 
@@ -42,21 +43,24 @@ public:
 	{
 		switch (_val)
 		{
-		case CubeSettings::CubeDemos::Textured:
-		{
-			return "Textured";
-		}
-		case CubeSettings::CubeDemos::Shader:
-		{
-			return "Shader";
-		}
-		default:
-		{
-			return "Invalid";
-		}
+			case CubeSettings::CubeDemos::Textured:
+			{
+				return "Textured";
+			}
+			case CubeSettings::CubeDemos::Shader:
+			{
+				return "Shader";
+			}
+			case CubeSettings::CubeDemos::Lit:
+			{
+				return "Lit";
+			}
+			default:
+			{
+				return "Invalid";
+			}
 		}
 	}
-
 
 	CubeDemos current_demo = CubeDemos::Textured;
 

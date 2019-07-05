@@ -42,7 +42,8 @@ void VkCubeDemo::Setup()
 	CubeSettings::Instance()->OnDemoUpdated += ChangeCubeDemo;
 
 	m_ui_instance.Init(m_swapchain.Extent().width, m_swapchain.Extent().height, g_VkGenerator.WindowHdle());
-	m_ui_instance.LoadResources(g_VkGenerator.Device(), g_VkGenerator.PhysicalDevice(), m_shader_directory, m_command,
+	m_ui_instance.LoadResources(g_VkGenerator.Device(), g_VkGenerator.PhysicalDevice(), m_shader_directory,
+	                            m_pipeline_cache_directory, m_command,
 	                            m_render_pass.Pass(), g_VkGenerator.GraphicsQueue(), msaa ?
 		                                                                                 CubeSettings::Instance()->
 		                                                                                 GetSampleCount() :
@@ -98,6 +99,7 @@ void VkCubeDemo::Shutdown()
 
 	m_view_ubo.Destroy(g_VkGenerator.Device());
 	m_cube_ubo.Destroy(g_VkGenerator.Device());
+	m_dir_light_ubo.Destroy(g_VkGenerator.Device());
 	m_sampler.Destroy(g_VkGenerator.Device());
 
 	for (auto& i : m_render_list)
@@ -149,18 +151,26 @@ void VkCubeDemo::RecreateDescriptors()
 	CreateDescriptorSets();
 }
 
-void VkCubeDemo::ChangeCubeDemo(CubeSettings::CubeDemos _demo)
+void VkCubeDemo::ChangeCubeDemo(const CubeSettings::CubeDemos _demo)
 {
-	Instance()->m_current_vert = _demo == CubeSettings::CubeDemos::Shader ?
-		                             Instance()->m_shader_vert :
-		                             Instance()->m_texture_vert;
-
-	Instance()->m_current_frag = _demo == CubeSettings::CubeDemos::Shader ?
-		                             Instance()->m_shader_frag :
-		                             Instance()->m_texture_frag;
-
 	Instance()->m_vert.Destroy(g_VkGenerator.Device());
 	Instance()->m_frag.Destroy(g_VkGenerator.Device());
+
+	if (_demo == CubeSettings::CubeDemos::Shader)
+	{
+		Instance()->m_current_vert = Instance()->m_shader_vert;
+		Instance()->m_current_frag = Instance()->m_shader_frag;
+	}
+	else if (_demo == CubeSettings::CubeDemos::Textured)
+	{
+		Instance()->m_current_vert = Instance()->m_texture_vert;
+		Instance()->m_current_frag = Instance()->m_texture_frag;
+	}
+	else if (_demo == CubeSettings::CubeDemos::Lit)
+	{
+		Instance()->m_current_vert = Instance()->m_tex_lit_vert;
+		Instance()->m_current_frag = Instance()->m_tex_lit_frag;
+	}
 
 	Instance()->CreateShaders();
 }
@@ -190,7 +200,7 @@ void VkCubeDemo::LoadAssets()
 {
 	Model cube(g_VkGenerator.Device(), g_VkGenerator.PhysicalDevice(), m_swapchain.ImageViews().size());
 	cube.SetTextureSupport<ERenderType::Diffuse>();
-	cube.LoadMesh(g_VkGenerator.Device(), g_VkGenerator.PhysicalDevice(), m_model_directory, "cube.obj");
+	cube.LoadMesh(g_VkGenerator.Device(), g_VkGenerator.PhysicalDevice(), m_model_directory, "cube_normals.obj");
 	cube.LoadTexture(m_command, m_texture_directory, "texture.jpg");
 
 	m_render_list.emplace_back(cube);
@@ -451,6 +461,11 @@ void VkCubeDemo::CreateShaders()
 
 void VkCubeDemo::CreatePipelines()
 {
+	if (!std::filesystem::is_directory(m_pipeline_cache_directory))
+	{
+		std::filesystem::create_directory(m_pipeline_cache_directory);
+	}
+
 	const std::vector<vk::PipelineShaderStageCreateInfo> stages
 	{
 		m_vert.Set(),
@@ -462,8 +477,8 @@ void VkCubeDemo::CreatePipelines()
 		                                        CubeSettings::Instance()->GetSampleCount() :
 		                                        vk::SampleCountFlagBits::e1;
 
-	const auto binding = Vertex::getBindingDescription();
-	const auto attrib  = Vertex::getAttributeDescriptions();
+	const auto binding = VertexPosUVNormal::getBindingDescription();
+	const auto attrib  = VertexPosUVNormal::getAttributeDescriptions();
 
 	m_graphics_pipeline.SetInputAssembler(&binding, attrib, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
 	m_graphics_pipeline.SetViewport(m_swapchain.Extent(), 0.0f, 1.0f);
@@ -471,7 +486,7 @@ void VkCubeDemo::CreatePipelines()
 	m_graphics_pipeline.SetShaders(stages);
 	m_graphics_pipeline.SetPushConstants<float>(0, vk::ShaderStageFlagBits::eFragment);
 	m_graphics_pipeline.CreatePipelineLayout(g_VkGenerator.Device(), m_desc_set_layouts.Get(), 1, 1);
-	m_graphics_pipeline.CreateGraphicPipeline(g_VkGenerator.Device(), m_render_pass.Pass());
+	m_graphics_pipeline.CreatePipeline(g_VkGenerator.Device(), m_render_pass.Pass(), m_pipeline_cache_directory, "POS_UV_NORMAL");
 }
 
 void VkCubeDemo::CreateColourResources()
@@ -558,7 +573,8 @@ void VkCubeDemo::RecreateSwapchain()
 	m_ui_instance.Destroy(g_VkGenerator.Device());
 	m_ui_instance.Recreate(g_VkGenerator.Device(), m_swapchain.Extent().width, m_swapchain.Extent().height,
 	                       g_VkGenerator.WindowHdle());
-	m_ui_instance.LoadResources(g_VkGenerator.Device(), g_VkGenerator.PhysicalDevice(), m_shader_directory, m_command,
+	m_ui_instance.LoadResources(g_VkGenerator.Device(), g_VkGenerator.PhysicalDevice(), m_shader_directory,
+	                            m_pipeline_cache_directory, m_command,
 	                            m_render_pass.Pass(), g_VkGenerator.GraphicsQueue(), msaa ?
 		                                                                                 CubeSettings::Instance()->
 		                                                                                 GetSampleCount() :
@@ -573,13 +589,19 @@ void VkCubeDemo::CreateDescriptorLayouts()
 	m_desc_set_layouts.Add(m_cube_ubo.DescLayoutBinding());
 	m_desc_set_layouts.Add(m_view_ubo.DescLayoutBinding());
 
-	if (CubeSettings::Instance()->current_demo == CubeSettings::CubeDemos::Textured)
+	if (CubeSettings::Instance()->current_demo != CubeSettings::CubeDemos::Shader)
 	{
 		for (auto& model : m_render_list)
 		{
 			model.CreateDescriptorSetLayout(2);
 			m_desc_set_layouts.Add(model.DescLayoutBinding());
 		}
+	}
+
+	if (CubeSettings::Instance()->current_demo == CubeSettings::CubeDemos::Lit)
+	{
+		m_dir_light_ubo.CreateDescriptorSetLayout(vk::ShaderStageFlagBits::eFragment, 3);
+		m_desc_set_layouts.Add(m_dir_light_ubo.DescLayoutBinding());
 	}
 
 	m_desc_set_layouts.CreateLayouts(g_VkGenerator.Device());
@@ -590,12 +612,17 @@ void VkCubeDemo::CreateDescriptorPools()
 	m_desc_pool.Add(m_cube_ubo.DescLayoutBinding().descriptorType, m_cube_ubo.DescLayoutBinding().binding);
 	m_desc_pool.Add(m_view_ubo.DescLayoutBinding().descriptorType, m_view_ubo.DescLayoutBinding().binding);
 
-	if (CubeSettings::Instance()->current_demo == CubeSettings::CubeDemos::Textured)
+	if (CubeSettings::Instance()->current_demo != CubeSettings::CubeDemos::Shader)
 	{
 		for (auto& model : m_render_list)
 		{
 			m_desc_pool.Add(model.DescLayoutBinding().descriptorType, model.DescLayoutBinding().binding);
 		}
+	}
+
+	if (CubeSettings::Instance()->current_demo == CubeSettings::CubeDemos::Lit)
+	{
+		m_desc_pool.Add(m_dir_light_ubo.DescLayoutBinding().descriptorType, m_dir_light_ubo.DescLayoutBinding().binding);
 	}
 
 	m_desc_pool.CreatePool(g_VkGenerator.Device(), m_swapchain.ImageViews().size());
@@ -616,13 +643,19 @@ void VkCubeDemo::CreateDescriptorSets()
 		m_cube_ubo.UpdateDescriptorSet(g_VkGenerator.Device(), i);
 		m_view_ubo.UpdateDescriptorSet(g_VkGenerator.Device(), i);
 
-		if (CubeSettings::Instance()->current_demo == CubeSettings::CubeDemos::Textured)
+		if (CubeSettings::Instance()->current_demo != CubeSettings::CubeDemos::Shader)
 		{
 			for (auto& model : m_render_list)
 			{
 				model.CreateDescriptorSet(i, m_desc_sets.Get(i), m_sampler.SamplerInstance());
 				model.UpdateDescriptorSet(g_VkGenerator.Device(), i);
 			}
+		}
+
+		if (CubeSettings::Instance()->current_demo == CubeSettings::CubeDemos::Lit)
+		{
+			m_dir_light_ubo.CreateDescriptorSet(i, m_desc_sets.Get(i));
+			m_dir_light_ubo.UpdateDescriptorSet(g_VkGenerator.Device(), i);
 		}
 	}
 }
@@ -641,7 +674,13 @@ void VkCubeDemo::CreateResources()
 	m_view_ubo = VkRes::UniformBuffer<ViewportData, VkRes::EDataUsageFlags::OnResize>
 	(g_VkGenerator.Device(), g_VkGenerator.PhysicalDevice(),
 	 m_swapchain.ImageViews().size(), false);
+
+	m_dir_light_ubo = VkRes::UniformBuffer<DirectionalLight, VkRes::EDataUsageFlags::Once>
+	(g_VkGenerator.Device(), g_VkGenerator.PhysicalDevice(),
+	 m_swapchain.ImageViews().size(), false);
 }
+
+bool updated_once = false;
 
 void VkCubeDemo::UpdateBufferData(uint32_t _image_index, bool _resize)
 {
@@ -666,12 +705,24 @@ void VkCubeDemo::UpdateBufferData(uint32_t _image_index, bool _resize)
 			auto dims = m_swapchain.Extent();
 
 			auto m = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 1.0f));
-			auto v = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+			auto v = glm::lookAt(glm::vec3(2.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 			auto p = glm::perspective(glm::radians(45.0f), (float)dims.width / (float)dims.height, 0.1f, 10.0f);
 			p[1][1] *= -1;
 
-			m_cube_ubo.GetData(_image_index).mvp = p * v * m;
+			m_cube_ubo.GetData(_image_index).mvp   = p * v * m;
+			m_cube_ubo.GetData(_image_index).world = m;
 			m_cube_ubo.Map(g_VkGenerator.Device(), _image_index);
+		}
+
+		if (!updated_once)
+		{
+			m_dir_light_ubo.GetData().direction = glm::vec3(-0.5f, 0.0f, 1.0f);
+			m_dir_light_ubo.Map(g_VkGenerator.Device(), _image_index);
+
+			if (_image_index > 2)
+			{
+				updated_once = true;
+			}
 		}
 	}
 }
