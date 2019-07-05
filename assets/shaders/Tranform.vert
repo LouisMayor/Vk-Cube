@@ -4,6 +4,7 @@
 layout(binding = 0) uniform UTranformData
 {
     mat4 MVP;
+	mat4 World;
 } TranformData;
 
 layout(location = 0) in vec3 inPosition;
