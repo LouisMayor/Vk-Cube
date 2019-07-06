@@ -202,8 +202,7 @@
     <ClInclude Include="..\src\include\Texture.h" />
     <ClInclude Include="..\src\include\UI.h" />
     <ClInclude Include="..\src\include\UniformBuffer.h" />
-    <ClInclude Include="..\src\include\VertexPosUV.h" />
-    <ClInclude Include="..\src\include\VertexPosUVNormal.h" />
+    <ClInclude Include="..\src\include\VertexLayout.h" />
     <ClInclude Include="..\src\include\VertexTypes.h" />
     <ClInclude Include="..\src\include\Vk-Generator\VkGenerator.hpp" />
     <ClInclude Include="..\src\include\Vk-Generator\VkGenerator.ipp" />
@@ -213,6 +212,7 @@
   <ItemGroup>
     <None Include="..\assets\shaders\forward_tex.frag" />
     <None Include="..\assets\shaders\forward_Tranform_tex.vert" />
+    <None Include="..\assets\shaders\inputs.vert" />
     <None Include="..\assets\shaders\Tranform.vert" />
     <None Include="..\assets\shaders\Tranform_tex.vert" />
     <None Include="..\assets\shaders\triangle_no_mesh.frag" />

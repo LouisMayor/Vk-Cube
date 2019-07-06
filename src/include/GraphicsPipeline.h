@@ -323,7 +323,7 @@ namespace VkRes
 			return succesfully_constructed;
 		}
 
-		// Input & VertexPosUVNormal
+		// Input & VertexLayout
 		vk::PipelineInputAssemblyStateCreateInfo         m_input_assembly_state_create_info;
 		vk::PipelineVertexInputStateCreateInfo           m_vertex_input_state_create_info;
 		vk::VertexInputBindingDescription                m_vertex_binding_desc;

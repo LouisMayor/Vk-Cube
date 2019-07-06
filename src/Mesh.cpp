@@ -60,7 +60,9 @@ void Mesh::Load(vk::Device                        _device,
 		{
 			VertexPosUVNormal vertex = {};
 
-			if (index.vertex_index != -1)
+			bool has_pos = index.vertex_index != -1;
+
+			if (has_pos)
 			{
 				vertex.pos =
 				{
@@ -69,10 +71,21 @@ void Mesh::Load(vk::Device                        _device,
 					attrib.vertices[3 * index.vertex_index + 0]
 				};
 			}
+			else
+			{
+				vertex.pos =
+				{
+					0.0,
+					0.0,
+					0.0
+				};
+			}
 
 			vertex.color = { 1.0f, 1.0f, 1.0f };
 
-			if (index.texcoord_index != -1)
+			bool has_uv = index.texcoord_index != -1;
+
+			if (has_uv)
 			{
 				vertex.texCoord =
 				{
@@ -80,8 +93,18 @@ void Mesh::Load(vk::Device                        _device,
 					1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
 				};
 			}
+			else
+			{
+				vertex.texCoord =
+				{
+					0.0,
+					0.0
+				};
+			}
 
-			if (index.normal_index != -1)
+			bool has_normals = index.normal_index != -1;
+
+			if (has_normals)
 			{
 				vertex.normal =
 				{
@@ -90,6 +113,15 @@ void Mesh::Load(vk::Device                        _device,
 					attrib.normals[3 * index.normal_index + 0]
 				};
 			}
+			else
+			{
+				vertex.normal =
+				{
+					0.0,
+					0.0,
+					0.0
+				};
+			}			
 
 			if (unique_vertices.count(vertex) == 0)
 			{

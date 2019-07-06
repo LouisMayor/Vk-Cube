@@ -17,7 +17,14 @@ void Settings::SetMSAA(const bool _value)
 
 	if (tmp != use_msaa)
 	{
-		m_updated |= SettingUpdateFlags::SwapchainRecreation;
+		if (m_updated & SettingUpdateFlags::None)
+		{
+			m_updated = SettingUpdateFlags::SwapchainRecreation;
+		}
+		else
+		{
+			m_updated |= SettingUpdateFlags::SwapchainRecreation;
+		}
 	}
 }
 
@@ -39,9 +46,18 @@ void Settings::SetSampleCount(const int _value)
 	const int tmp = sample_level;
 	sample_level  = static_cast<int>(SampleCount(_value));
 
+
+
 	if (tmp != sample_level)
 	{
-		m_updated |= SettingUpdateFlags::SwapchainRecreation;
+		if (m_updated & SettingUpdateFlags::None)
+		{
+			m_updated = SettingUpdateFlags::SwapchainRecreation;
+		}
+		else
+		{
+			m_updated |= SettingUpdateFlags::SwapchainRecreation;
+		}
 	}
 }
 

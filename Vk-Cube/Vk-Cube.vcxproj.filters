@@ -184,17 +184,14 @@
     <ClInclude Include="..\src\include\Event.hpp">
       <Filter>Header Files\Simple_Events</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\include\VertexPosUVNormal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\include\VertexTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\include\VertexPosUV.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\include\PipelineCache.h">
       <Filter>Header Files\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\include\VertexLayout.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -226,6 +223,9 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="..\assets\shaders\forward_Tranform_tex.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\assets\shaders\inputs.vert">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

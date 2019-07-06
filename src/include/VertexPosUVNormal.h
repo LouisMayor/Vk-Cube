@@ -13,7 +13,7 @@
 
 #include "VulkanObjects.h"
 
-struct VertexPosUVNormal
+struct VertexLayout
 {
 	glm::vec3 pos;
 	glm::vec3 color;
@@ -24,7 +24,7 @@ struct VertexPosUVNormal
 	{
 		vk::VertexInputBindingDescription bindingDescription = {};
 		bindingDescription.binding                           = 0;
-		bindingDescription.stride                            = sizeof(VertexPosUVNormal);
+		bindingDescription.stride                            = sizeof(VertexLayout);
 		bindingDescription.inputRate                         = vk::VertexInputRate::eVertex;
 
 		return bindingDescription;
@@ -38,27 +38,27 @@ struct VertexPosUVNormal
 		attributeDescriptions[0].binding  = 0;
 		attributeDescriptions[0].location = 0;
 		attributeDescriptions[0].format   = vk::Format::eR32G32B32Sfloat;
-		attributeDescriptions[0].offset   = offsetof(VertexPosUVNormal, pos);
+		attributeDescriptions[0].offset   = offsetof(VertexLayout, pos);
 
 		attributeDescriptions[1].binding  = 0;
 		attributeDescriptions[1].location = 1;
 		attributeDescriptions[1].format   = vk::Format::eR32G32B32Sfloat;
-		attributeDescriptions[1].offset   = offsetof(VertexPosUVNormal, color);
+		attributeDescriptions[1].offset   = offsetof(VertexLayout, color);
 
 		attributeDescriptions[2].binding  = 0;
 		attributeDescriptions[2].location = 2;
 		attributeDescriptions[2].format   = vk::Format::eR32G32Sfloat;
-		attributeDescriptions[2].offset   = offsetof(VertexPosUVNormal, texCoord);
+		attributeDescriptions[2].offset   = offsetof(VertexLayout, texCoord);
 
 		attributeDescriptions[3].binding  = 0;
 		attributeDescriptions[3].location = 3;
 		attributeDescriptions[3].format   = vk::Format::eR32G32B32Sfloat;
-		attributeDescriptions[3].offset   = offsetof(VertexPosUVNormal, normal);
+		attributeDescriptions[3].offset   = offsetof(VertexLayout, normal);
 
 		return attributeDescriptions;
 	}
 
-	bool operator==(const VertexPosUVNormal& other) const
+	bool operator==(const VertexLayout& other) const
 	{
 		return (pos == other.pos && normal == other.normal && color == other.color && texCoord == other.texCoord);
 	}
@@ -66,9 +66,9 @@ struct VertexPosUVNormal
 
 namespace std
 {
-	template <> struct hash<VertexPosUVNormal>
+	template <> struct hash<VertexLayout>
 	{
-		size_t operator()(VertexPosUVNormal const& vertex) const
+		size_t operator()(VertexLayout const& vertex) const
 		{
 			return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (hash<glm::vec2>()(
 				vertex.texCoord) << 1);

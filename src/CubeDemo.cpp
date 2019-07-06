@@ -116,9 +116,15 @@ void VkCubeDemo::Shutdown()
 		m_render_finished_semaphores[i].Destroy(g_VkGenerator.Device());
 	}
 
-	m_vert.Destroy(g_VkGenerator.Device());
-	m_frag.Destroy(g_VkGenerator.Device());
-	m_graphics_pipeline.Destroy(g_VkGenerator.Device());
+	m_non_lit_vert.Destroy(g_VkGenerator.Device());
+	m_non_lit_frag.Destroy(g_VkGenerator.Device());
+	m_non_lit_tex_vert.Destroy(g_VkGenerator.Device());
+	m_non_lit_tex_frag.Destroy(g_VkGenerator.Device());
+	m_non_lit_graphics_pipeline.Destroy(g_VkGenerator.Device());
+
+	m_lit_vert.Destroy(g_VkGenerator.Device());
+	m_lit_frag.Destroy(g_VkGenerator.Device());
+	m_lit_graphics_pipeline.Destroy(g_VkGenerator.Device());
 
 	for (auto& i : m_framebuffers)
 	{
@@ -151,28 +157,29 @@ void VkCubeDemo::RecreateDescriptors()
 	CreateDescriptorSets();
 }
 
-void VkCubeDemo::ChangeCubeDemo(const CubeSettings::CubeDemos _demo)
+void VkCubeDemo::SetActiveShaders(CubeSettings::CubeDemos _demo)
 {
-	Instance()->m_vert.Destroy(g_VkGenerator.Device());
-	Instance()->m_frag.Destroy(g_VkGenerator.Device());
-
 	if (_demo == CubeSettings::CubeDemos::Shader)
 	{
-		Instance()->m_current_vert = Instance()->m_shader_vert;
-		Instance()->m_current_frag = Instance()->m_shader_frag;
+		active_vert = &m_non_lit_vert;
+		active_frag = &m_non_lit_frag;
 	}
 	else if (_demo == CubeSettings::CubeDemos::Textured)
 	{
-		Instance()->m_current_vert = Instance()->m_texture_vert;
-		Instance()->m_current_frag = Instance()->m_texture_frag;
+		active_vert = &m_non_lit_tex_vert;
+		active_frag = &m_non_lit_tex_frag;
 	}
-	else if (_demo == CubeSettings::CubeDemos::Lit)
+	else
 	{
-		Instance()->m_current_vert = Instance()->m_tex_lit_vert;
-		Instance()->m_current_frag = Instance()->m_tex_lit_frag;
+		active_vert = &m_lit_vert;
+		active_frag = &m_lit_frag;
 	}
+}
 
-	Instance()->CreateShaders();
+void VkCubeDemo::ChangeCubeDemo(const CubeSettings::CubeDemos _demo)
+{
+	g_Logger.Info("Loading: " + CubeSettings::Instance()->ToString(_demo));
+	Instance()->SetActiveShaders(_demo);
 }
 
 VkBool32 VkCubeDemo::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT      _message_severity,
@@ -204,9 +211,6 @@ void VkCubeDemo::LoadAssets()
 	cube.LoadTexture(m_command, m_texture_directory, "texture.jpg");
 
 	m_render_list.emplace_back(cube);
-
-	m_current_vert = m_texture_vert;
-	m_current_frag = m_texture_frag;
 }
 
 void VkCubeDemo::SubmitQueue()
@@ -271,8 +275,8 @@ void VkCubeDemo::SubmitQueue()
 
 	if (present_result == vk::Result::eErrorOutOfDateKHR || present_result == vk::Result::eSuboptimalKHR || m_buffer_resized)
 	{
-		m_buffer_resized = false;
 		RecreateSwapchain();
+		m_buffer_resized = false;
 	}
 	else if (present_result != vk::Result::eSuccess)
 	{
@@ -335,12 +339,13 @@ void VkCubeDemo::RecordCmdBuffer()
 
 		m_command.SetScissor(0, m_swapchain.Extent().width, m_swapchain.Extent().height, buffer_index);
 
-		m_command.BindPipeline(vk::PipelineBindPoint::eGraphics, m_graphics_pipeline.Pipeline(), buffer_index);
+		m_command.BindPipeline(vk::PipelineBindPoint::eGraphics, m_active_pipeline->Pipeline(), buffer_index);
 
-		m_command.PushConstants<float>(m_total_time, m_graphics_pipeline.PipelineLayout(), vk::ShaderStageFlagBits::eFragment,
+		m_command.PushConstants<float>(m_total_time, m_active_pipeline->PipelineLayout(),
+		                               vk::ShaderStageFlagBits::eFragment,
 		                               buffer_index);
 
-		m_command.BindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_graphics_pipeline.PipelineLayout(),
+		m_command.BindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_active_pipeline->PipelineLayout(),
 		                             &m_desc_sets.Get(buffer_index), buffer_index);
 
 		for (auto& model : m_render_list)
@@ -448,15 +453,37 @@ void VkCubeDemo::CreateShaders()
 		return;
 	}
 
-	m_vert = VkRes::Shader(g_VkGenerator.Device(),
-	                       vk::ShaderStageFlagBits::eVertex,
-	                       m_shader_directory,
-	                       m_current_vert + ".spv");
+	m_non_lit_vert = VkRes::Shader(g_VkGenerator.Device(),
+	                               vk::ShaderStageFlagBits::eVertex,
+	                               m_shader_directory,
+	                               m_shader_vert + ".spv");
 
-	m_frag = VkRes::Shader(g_VkGenerator.Device(),
-	                       vk::ShaderStageFlagBits::eFragment,
-	                       m_shader_directory,
-	                       m_current_frag + ".spv");
+	m_non_lit_frag = VkRes::Shader(g_VkGenerator.Device(),
+	                               vk::ShaderStageFlagBits::eFragment,
+	                               m_shader_directory,
+	                               m_shader_frag + ".spv");
+
+	m_non_lit_tex_vert = VkRes::Shader(g_VkGenerator.Device(),
+	                                   vk::ShaderStageFlagBits::eVertex,
+	                                   m_shader_directory,
+	                                   m_non_lit_texture_vert + ".spv");
+
+	m_non_lit_tex_frag = VkRes::Shader(g_VkGenerator.Device(),
+	                                   vk::ShaderStageFlagBits::eFragment,
+	                                   m_shader_directory,
+	                                   m_non_lit_texture_frag + ".spv");
+
+	m_lit_vert = VkRes::Shader(g_VkGenerator.Device(),
+	                           vk::ShaderStageFlagBits::eVertex,
+	                           m_shader_directory,
+	                           m_tex_lit_vert + ".spv");
+
+	m_lit_frag = VkRes::Shader(g_VkGenerator.Device(),
+	                           vk::ShaderStageFlagBits::eFragment,
+	                           m_shader_directory,
+	                           m_tex_lit_frag + ".spv");
+
+	SetActiveShaders(CubeSettings::Instance()->current_demo);
 }
 
 void VkCubeDemo::CreatePipelines()
@@ -466,10 +493,10 @@ void VkCubeDemo::CreatePipelines()
 		std::filesystem::create_directory(m_pipeline_cache_directory);
 	}
 
-	const std::vector<vk::PipelineShaderStageCreateInfo> stages
+	const std::vector<vk::PipelineShaderStageCreateInfo> non_lit_stages
 	{
-		m_vert.Set(),
-		m_frag.Set()
+		active_vert->Set(),
+		active_frag->Set()
 	};
 
 	const bool                    msaa    = CubeSettings::Instance()->use_msaa;
@@ -477,16 +504,109 @@ void VkCubeDemo::CreatePipelines()
 		                                        CubeSettings::Instance()->GetSampleCount() :
 		                                        vk::SampleCountFlagBits::e1;
 
-	const auto binding = VertexPosUVNormal::getBindingDescription();
-	const auto attrib  = VertexPosUVNormal::getAttributeDescriptions();
+	const auto tex_non_lit_binding = VertexPosUV::getBindingDescription();
+	const auto tex_non_lit_attrib  = VertexPosUV::getAttributeDescriptions();
 
-	m_graphics_pipeline.SetInputAssembler(&binding, attrib, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
-	m_graphics_pipeline.SetViewport(m_swapchain.Extent(), 0.0f, 1.0f);
-	m_graphics_pipeline.SetRasterizer(VK_TRUE, VK_TRUE, vk::CompareOp::eLess, samples, VK_FALSE, VK_FALSE);
-	m_graphics_pipeline.SetShaders(stages);
-	m_graphics_pipeline.SetPushConstants<float>(0, vk::ShaderStageFlagBits::eFragment);
-	m_graphics_pipeline.CreatePipelineLayout(g_VkGenerator.Device(), m_desc_set_layouts.Get(), 1, 1);
-	m_graphics_pipeline.CreatePipeline(g_VkGenerator.Device(), m_render_pass.Pass(), m_pipeline_cache_directory, "POS_UV_NORMAL");
+	m_non_lit_graphics_pipeline.SetInputAssembler(&tex_non_lit_binding, tex_non_lit_attrib, vk::PrimitiveTopology::eTriangleList,
+	                                              VK_FALSE);
+	m_non_lit_graphics_pipeline.SetViewport(m_swapchain.Extent(), 0.0f, 1.0f);
+	m_non_lit_graphics_pipeline.SetRasterizer(VK_TRUE, VK_TRUE, vk::CompareOp::eLess, samples, VK_FALSE, VK_FALSE);
+	m_non_lit_graphics_pipeline.SetShaders(non_lit_stages);
+	m_non_lit_graphics_pipeline.SetPushConstants<float>(0, vk::ShaderStageFlagBits::eFragment);
+	m_non_lit_graphics_pipeline.CreatePipelineLayout(g_VkGenerator.Device(), m_desc_set_layouts.Get(), 1, 1);
+	m_non_lit_graphics_pipeline.CreatePipeline(g_VkGenerator.Device(), m_render_pass.Pass(), m_pipeline_cache_directory,
+	                                           "POS_UV");
+
+	const std::vector<vk::PipelineShaderStageCreateInfo> lit_stages
+	{
+		m_lit_vert.Set(),
+		m_lit_frag.Set()
+	};
+
+	const auto tex_lit_binding = VertexPosUVNormal::getBindingDescription();
+	const auto tex_lit_attrib  = VertexPosUVNormal::getAttributeDescriptions();
+
+	m_lit_graphics_pipeline.SetInputAssembler(&tex_lit_binding, tex_lit_attrib, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
+	m_lit_graphics_pipeline.SetViewport(m_swapchain.Extent(), 0.0f, 1.0f);
+	m_lit_graphics_pipeline.SetRasterizer(VK_TRUE, VK_TRUE, vk::CompareOp::eLess, samples, VK_FALSE, VK_FALSE);
+	m_lit_graphics_pipeline.SetShaders(non_lit_stages);
+	m_lit_graphics_pipeline.SetPushConstants<float>(0, vk::ShaderStageFlagBits::eFragment);
+	m_lit_graphics_pipeline.CreatePipelineLayout(g_VkGenerator.Device(), m_desc_set_layouts.Get(), 1, 1);
+	m_lit_graphics_pipeline.CreatePipeline(g_VkGenerator.Device(), m_render_pass.Pass(), m_pipeline_cache_directory,
+	                                       "POS_UV_NORMAL");
+
+	if (CubeSettings::Instance()->current_demo == CubeSettings::CubeDemos::Lit)
+	{
+		m_active_pipeline = &m_lit_graphics_pipeline;
+	}
+	else
+	{
+		m_active_pipeline = &m_non_lit_graphics_pipeline;
+	}
+}
+
+void VkCubeDemo::RecreateActivePipeline()
+{
+	const bool                    msaa    = CubeSettings::Instance()->use_msaa;
+	const vk::SampleCountFlagBits samples = msaa ?
+		                                        CubeSettings::Instance()->GetSampleCount() :
+		                                        vk::SampleCountFlagBits::e1;
+
+	if (CubeSettings::Instance()->current_demo != CubeSettings::CubeDemos::Lit)
+	{
+		m_non_lit_graphics_pipeline.Destroy(g_VkGenerator.Device());
+
+		const std::vector<vk::PipelineShaderStageCreateInfo> non_lit_stages
+		{
+			active_vert->Set(),
+			active_frag->Set()
+		};
+
+		const auto tex_non_lit_binding = VertexPosUV::getBindingDescription();
+		const auto tex_non_lit_attrib  = VertexPosUV::getAttributeDescriptions();
+
+		m_non_lit_graphics_pipeline.SetInputAssembler(&tex_non_lit_binding, tex_non_lit_attrib,
+		                                              vk::PrimitiveTopology::eTriangleList, VK_FALSE);
+		m_non_lit_graphics_pipeline.SetViewport(m_swapchain.Extent(), 0.0f, 1.0f);
+		m_non_lit_graphics_pipeline.SetRasterizer(VK_TRUE, VK_TRUE, vk::CompareOp::eLess, samples, VK_FALSE, VK_FALSE);
+		m_non_lit_graphics_pipeline.SetShaders(non_lit_stages);
+		m_non_lit_graphics_pipeline.SetPushConstants<float>(0, vk::ShaderStageFlagBits::eFragment);
+		m_non_lit_graphics_pipeline.CreatePipelineLayout(g_VkGenerator.Device(), m_desc_set_layouts.Get(), 1, 1);
+		m_non_lit_graphics_pipeline.CreatePipeline(g_VkGenerator.Device(), m_render_pass.Pass(), m_pipeline_cache_directory,
+		                                           "POS_UV");
+	}
+	else
+	{
+		m_lit_graphics_pipeline.Destroy(g_VkGenerator.Device());
+
+		const std::vector<vk::PipelineShaderStageCreateInfo> lit_stages
+		{
+			m_lit_vert.Set(),
+			m_lit_frag.Set()
+		};
+
+		const auto tex_lit_binding = VertexPosUVNormal::getBindingDescription();
+		const auto tex_lit_attrib  = VertexPosUVNormal::getAttributeDescriptions();
+
+		m_lit_graphics_pipeline.SetInputAssembler(&tex_lit_binding, tex_lit_attrib, vk::PrimitiveTopology::eTriangleList,
+		                                          VK_FALSE);
+		m_lit_graphics_pipeline.SetViewport(m_swapchain.Extent(), 0.0f, 1.0f);
+		m_lit_graphics_pipeline.SetRasterizer(VK_TRUE, VK_TRUE, vk::CompareOp::eLess, samples, VK_FALSE, VK_FALSE);
+		m_lit_graphics_pipeline.SetShaders(lit_stages);
+		m_lit_graphics_pipeline.SetPushConstants<float>(0, vk::ShaderStageFlagBits::eFragment);
+		m_lit_graphics_pipeline.CreatePipelineLayout(g_VkGenerator.Device(), m_desc_set_layouts.Get(), 1, 1);
+		m_lit_graphics_pipeline.CreatePipeline(g_VkGenerator.Device(), m_render_pass.Pass(), m_pipeline_cache_directory,
+		                                       "POS_UV_NORMAL");
+	}
+
+	if (CubeSettings::Instance()->current_demo == CubeSettings::CubeDemos::Lit)
+	{
+		m_active_pipeline = &m_lit_graphics_pipeline;
+	}
+	else
+	{
+		m_active_pipeline = &m_non_lit_graphics_pipeline;
+	}
 }
 
 void VkCubeDemo::CreateColourResources()
@@ -533,7 +653,6 @@ void VkCubeDemo::CleanSwapchain()
 	m_backbuffer.Destroy(device);
 	m_depth_buffer.Destroy(device);
 	m_command.FreeCommandBuffers(device);
-	m_graphics_pipeline.Destroy(device);
 	m_render_pass.Destroy(device);
 	for (auto& i : m_framebuffers)
 	{
@@ -561,7 +680,7 @@ void VkCubeDemo::RecreateSwapchain()
 	CreateDepthResources();
 	CreateRenderPasses();
 	CreateFrameBuffers();
-	CreatePipelines();
+	RecreateActivePipeline();
 
 	for (size_t image = 0; image < m_swapchain.ImageViews().size(); ++image)
 	{
@@ -701,7 +820,7 @@ void VkCubeDemo::UpdateBufferData(uint32_t _image_index, bool _resize)
 		{
 			auto current_time = std::chrono::high_resolution_clock::now();
 			auto time         = std::chrono::duration<float, std::chrono::seconds::period>(current_time - start_time).count() *
-					0.5f;
+					0.25f;
 			auto dims = m_swapchain.Extent();
 
 			auto m = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 1.0f));

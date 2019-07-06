@@ -43,6 +43,10 @@ public:
 
 private:
 
+	void SetActiveShaders(CubeSettings::CubeDemos);
+
+	void RecreateActivePipeline();
+
 	void RecreateDescriptors();
 
 	void CreateDescriptorLayouts() override;
@@ -106,14 +110,24 @@ private:
 		glm::vec3 direction;
 	};
 
+	VkRes::Shader* active_vert;
+	VkRes::Shader* active_frag;
+
+	VkRes::GraphicsPipeline         m_non_lit_graphics_pipeline;
+	VkRes::Shader                   m_non_lit_vert;
+	VkRes::Shader                   m_non_lit_frag;
+	VkRes::Shader                   m_non_lit_tex_vert;
+	VkRes::Shader                   m_non_lit_tex_frag;
+
+	VkRes::GraphicsPipeline         m_lit_graphics_pipeline;
+	VkRes::Shader                   m_lit_vert;
+	VkRes::Shader                   m_lit_frag;
+
 	VkRes::Swapchain                m_swapchain;
 	VkRes::Command                  m_command;
 	VkRes::DepthBuffer              m_depth_buffer;
 	VkRes::RenderTarget             m_backbuffer;
 	VkRes::RenderPass               m_render_pass;
-	VkRes::GraphicsPipeline         m_graphics_pipeline;
-	VkRes::Shader                   m_vert;
-	VkRes::Shader                   m_frag;
 	VkRes::DescriptorSetLayout      m_desc_set_layouts;
 	VkRes::DescriptorPool           m_desc_pool;
 	VkRes::DescriptorSet            m_desc_sets;
@@ -135,8 +149,8 @@ private:
 	float m_total_time;
 	float m_frame_delta;
 
-	std::string m_texture_vert = "Tranform_tex.vert";
-	std::string m_texture_frag = "unlit_tex.frag";
+	std::string m_non_lit_texture_vert = "Tranform_tex.vert";
+	std::string m_non_lit_texture_frag = "unlit_tex.frag";
 
 	std::string m_shader_vert = "Tranform.vert";
 	std::string m_shader_frag = "unlit.frag";
