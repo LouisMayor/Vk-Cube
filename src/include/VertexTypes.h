@@ -1,6 +1,6 @@
 #pragma once
 
-#include "VertexPosUVNormal.h"
+#include "VertexLayout.h"
 
 // using VertexPosUVNormalTangents = VertexLayout;
 using VertexPosUVNormal = VertexLayout;

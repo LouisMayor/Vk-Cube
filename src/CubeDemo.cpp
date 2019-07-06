@@ -523,8 +523,8 @@ void VkCubeDemo::CreatePipelines()
 		m_lit_frag.Set()
 	};
 
-	const auto tex_lit_binding = VertexPosUVNormal::getBindingDescription();
-	const auto tex_lit_attrib  = VertexPosUVNormal::getAttributeDescriptions();
+	const auto tex_lit_binding = VertexLayout::getBindingDescription();
+	const auto tex_lit_attrib  = VertexLayout::getAttributeDescriptions();
 
 	m_lit_graphics_pipeline.SetInputAssembler(&tex_lit_binding, tex_lit_attrib, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
 	m_lit_graphics_pipeline.SetViewport(m_swapchain.Extent(), 0.0f, 1.0f);
@@ -585,8 +585,8 @@ void VkCubeDemo::RecreateActivePipeline()
 			m_lit_frag.Set()
 		};
 
-		const auto tex_lit_binding = VertexPosUVNormal::getBindingDescription();
-		const auto tex_lit_attrib  = VertexPosUVNormal::getAttributeDescriptions();
+		const auto tex_lit_binding = VertexLayout::getBindingDescription();
+		const auto tex_lit_attrib  = VertexLayout::getAttributeDescriptions();
 
 		m_lit_graphics_pipeline.SetInputAssembler(&tex_lit_binding, tex_lit_attrib, vk::PrimitiveTopology::eTriangleList,
 		                                          VK_FALSE);

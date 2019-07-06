@@ -225,8 +225,5 @@
     <None Include="..\assets\shaders\forward_Tranform_tex.vert">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="..\assets\shaders\inputs.vert">
-      <Filter>Shaders</Filter>
-    </None>
   </ItemGroup>
 </Project>
