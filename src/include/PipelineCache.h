@@ -114,10 +114,11 @@ namespace VkRes
 					cache_data.reset();
 					cache_size = 0;
 
-					const std::string device_name    = info.deviceName;
-					const std::string device_message = "Device from cache file " +
-							VkGen::DeviceTypeToString(info.deviceType) + "  " +
-							VkGen::VendorIDToString(info.vendorID) + "  " + device_name;
+					const std::string device_message =
+							"Device info from cache file " +
+							VkGen::VendorIDToString(vendor_id) +
+							" - ID " + std::to_string(device_id) +
+							" use http://vulkan.gpuinfo.org/ to find the device using the ID";
 
 					g_Logger.Info(device_message);
 					g_Logger.Info(
