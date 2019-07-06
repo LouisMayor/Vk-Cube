@@ -67,18 +67,18 @@ namespace VkRes
 			VkRes::Buffer buffer = std::get<0>(m_buffers[_buffer_index]);
 
 			buffer.Map(_device);
-			std::memcpy(buffer.Data(), &GetData(_buffer_index), TotalBufferSize());
+			std::memcpy(buffer.Data(), &GetData(_buffer_index), static_cast<size_t>(TotalBufferSize()));
 			buffer.Unmap(_device);
 		}
 
 		[[nodiscard]] bool WantsPerFrameUpdate() const
 		{
-			return UsageFlags & EDataUsageFlags::PerFrame;
+			return static_cast<bool>(UsageFlags & PerFrame);
 		}
 
 		[[nodiscard]] bool WantsOnResizeUpdate() const
 		{
-			return UsageFlags & EDataUsageFlags::OnResize;
+			return static_cast<bool>(UsageFlags & OnResize);
 		}
 
 		[[nodiscard]] uint32_t BufferCount() const

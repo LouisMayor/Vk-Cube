@@ -335,9 +335,9 @@ void VkCubeDemo::RecordCmdBuffer()
 
 		m_command.BeginRenderPass(&render_pass_begin_info, vk::SubpassContents::eInline, buffer_index);
 
-		m_command.SetViewport(0, m_swapchain.Extent().width, m_swapchain.Extent().height, 0.0f, 1.0f, buffer_index);
+		m_command.SetViewport(0, static_cast<float>(m_swapchain.Extent().width), static_cast<float>(m_swapchain.Extent().height), 0.0f, 1.0f, buffer_index);
 
-		m_command.SetScissor(0, m_swapchain.Extent().width, m_swapchain.Extent().height, buffer_index);
+		m_command.SetScissor(0, static_cast<float>(m_swapchain.Extent().width), static_cast<float>(m_swapchain.Extent().height), buffer_index);
 
 		m_command.BindPipeline(vk::PipelineBindPoint::eGraphics, m_active_pipeline->Pipeline(), buffer_index);
 
@@ -754,7 +754,7 @@ void VkCubeDemo::CreateDescriptorSets()
 	                                   m_desc_pool.Get(),
 	                                   m_desc_set_layouts.Get());
 
-	for (int i = 0; i < m_swapchain.ImageViews().size(); ++i)
+	for (uint32_t i = 0; i < m_swapchain.ImageViews().size(); ++i)
 	{
 		m_cube_ubo.CreateDescriptorSet(i, m_desc_sets.Get(i));
 		m_view_ubo.CreateDescriptorSet(i, m_desc_sets.Get(i));

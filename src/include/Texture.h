@@ -124,7 +124,7 @@ namespace VkRes
 
 			std::memcpy(mapped, loader == ETextureLoader::Imgui ?
 				                    fontData :
-				                    pixels, upload_size);
+				                    pixels, static_cast<size_t>(upload_size));
 
 			// unmap
 			if (mapped != nullptr)

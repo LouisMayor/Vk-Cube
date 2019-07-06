@@ -26,7 +26,7 @@ namespace VkRes
 			{
 				file_read.seekg(0, std::ios_base::end);
 
-				cache_size = file_read.tellg();
+				cache_size = static_cast<size_t>(file_read.tellg());
 
 				file_read.clear();
 				file_read.seekg(0, std::ios_base::beg);
