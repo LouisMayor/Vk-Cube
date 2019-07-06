@@ -17,9 +17,9 @@ namespace VkRes
 		void Create(vk::Device _device, std::string _dir, std::string _name)
 		{
 			const std::string file = _dir + _name + ".bin";
-			std::fstream file_read(file, std::ios_base::in | std::ios_base::binary);
+			std::fstream      file_read(file, std::ios_base::in | std::ios_base::binary);
 
-			size_t cache_size = 0;
+			size_t                  cache_size = 0;
 			std::unique_ptr<char[]> cache_data = nullptr;
 
 			if (file_read)
@@ -41,6 +41,7 @@ namespace VkRes
 				file_read.close();
 			}
 
+			bool invalid_cache = false;
 			if (cache_data != nullptr)
 			{
 				/* Cache Header Layout:
@@ -60,8 +61,7 @@ namespace VkRes
 				 * |------------------------------------------------------------------------------------------------|
 				 */
 
-				bool           invalid_cache = false;
-				const uint32_t size          = sizeof uint32_t;
+				const uint32_t size = sizeof uint32_t;
 
 				uint32_t header_length                     = 0;
 				uint32_t header_version                    = 0;
@@ -120,7 +120,8 @@ namespace VkRes
 							VkGen::VendorIDToString(info.vendorID) + "  " + device_name;
 
 					g_Logger.Info(device_message);
-					g_Logger.Info("Couldn't read pipeline cache. Deleting this cache file and will create a new cache for this device.");
+					g_Logger.Info(
+						"Couldn't read pipeline cache. Deleting this cache file and will create a new cache for this device.");
 					std::filesystem::remove(file);
 				}
 			}
@@ -129,16 +130,13 @@ namespace VkRes
 			{
 				{},
 				cache_size,
-				cache_data.get()
+				invalid_cache ?
+					nullptr :
+					cache_data.get()
 			};
 
 			const auto result = _device.createPipelineCache(&create_info, nullptr, &m_pipeline_cache);
 			assert(("Failed to create pipeline cache", result == vk::Result::eSuccess));
-
-			if (cache_data != nullptr)
-			{
-				cache_data.reset();
-			}
 		}
 
 		bool HasFile(std::string _dir, std::string _name) const
