@@ -10,6 +10,7 @@
 - Texture loading via STB
 - Supports multisampling
 - Supports mipmaps
+- Pipeline caching
 
 ### Downloads:
 - [TinyObjLoader](https://github.com/syoyo/tinyobjloader)
