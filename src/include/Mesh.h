@@ -27,8 +27,8 @@ public:
 	size_t index_count;
 
 private:
-	std::vector<std::vector<VertexPosUVNormal>>   m_vertices;
-	std::vector<std::vector<uint32_t>> m_indices;
-	std::vector<VkRes::Buffer>         m_vertex_buffer;
-	std::vector<VkRes::Buffer>         m_index_buffer;
+	std::vector<VertexPosUVNormal>   m_vertices;
+	std::vector<uint32_t> m_indices;
+	VkRes::Buffer         m_vertex_buffer;
+	VkRes::Buffer         m_index_buffer;
 };

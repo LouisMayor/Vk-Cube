@@ -4,30 +4,23 @@
 
 void Mesh::Destroy(vk::Device _device)
 {
-	for (auto &i : m_vertex_buffer)
-	{
-		i.Destroy(_device);
-	}
-
-	for (auto& i : m_index_buffer)
-	{
-		i.Destroy(_device);
-	}
+	m_vertex_buffer.Destroy(_device);
+	m_index_buffer.Destroy(_device);
 }
 
 void Mesh::MapData(vk::Device _device, int _shape_count)
 {
 	for(int index = 0; index < _shape_count; ++index)
 	{
-		auto vert = m_vertex_buffer[index];
-		auto indi = m_index_buffer[index];
+		auto vert = m_vertex_buffer;
+		auto indi = m_index_buffer;
 
 		vert.Map(_device);
-		std::memcpy(vert.Data(), m_vertices[0].data(), m_vertices[0].size() * sizeof(VertexPosUVNormal));
+		std::memcpy(vert.Data(), m_vertices.data(), vertex_count * sizeof(VertexPosUVNormal));
 		vert.Unmap(_device);
 
 		indi.Map(_device);
-		std::memcpy(indi.Data(), m_indices[0].data(), m_indices[0].size() * sizeof(int));
+		std::memcpy(indi.Data(), m_indices.data(), index_count * sizeof(int));
 		indi.Unmap(_device);
 	}
 }
@@ -49,9 +42,6 @@ void Mesh::Load(vk::Device                        _device,
 	}
 
 	std::unordered_map<VertexPosUVNormal, uint32_t> unique_vertices = {};
-
-	m_vertices.resize(_shapes.size());
-	m_indices.resize(_shapes.size());
 
 	int shape_counter = 0;
 	for (const auto& shape : _shapes)
@@ -125,45 +115,29 @@ void Mesh::Load(vk::Device                        _device,
 
 			if (unique_vertices.count(vertex) == 0)
 			{
-				unique_vertices[vertex] = static_cast<uint32_t>(m_vertices[shape_counter].size());
-				m_vertices[shape_counter].push_back(vertex);
+				unique_vertices[vertex] = static_cast<uint32_t>(m_vertices.size());
+				m_vertices.push_back(vertex);
 			}
 
-			m_indices[shape_counter].push_back(unique_vertices[vertex]);
+			m_indices.push_back(unique_vertices[vertex]);
 		}
 		shape_counter++;
 	}
 
-	for (auto& buffer : m_vertices)
-	{
-		vertex_count += buffer.size();
-	}
+	vertex_count = m_vertices.size();	
+	index_count = m_indices.size();
 
-	for (auto& buffer : m_indices)
-	{
-		index_count += buffer.size();
-	}
+	m_vertex_buffer = VkRes::Buffer(_device, _physical_device, vertex_count * sizeof(VertexPosUVNormal), vk::BufferUsageFlagBits::eVertexBuffer);
+	m_index_buffer = VkRes::Buffer(_device, _physical_device, index_count * sizeof(int), vk::BufferUsageFlagBits::eIndexBuffer);
 
-	m_vertex_buffer.resize(_shapes.size());
-	m_index_buffer.resize(_shapes.size());
-
-	for (size_t i = 0; i < _shapes.size(); i++)
-	{
-		m_vertex_buffer[i] = VkRes::Buffer(_device, _physical_device, m_vertices[0].size() * sizeof(VertexPosUVNormal), vk::BufferUsageFlagBits::eVertexBuffer);
-		m_index_buffer[i] = VkRes::Buffer(_device, _physical_device, m_indices[0].size() * sizeof(int), vk::BufferUsageFlagBits::eIndexBuffer);
-	}
-
-	MapData(_device, _shapes.size());
+	MapData(_device, 1);
 }
 
 void Mesh::Draw(vk::CommandBuffer _cmd_buffer)
 {
-	for (size_t i = 0; i < m_vertex_buffer.size(); i++)
-	{
-		vk::DeviceSize offsets[] = { 0 };
-		_cmd_buffer.bindVertexBuffers(0, 1, &m_vertex_buffer[i].BufferData(), offsets);
-		_cmd_buffer.bindIndexBuffer(m_index_buffer[i].BufferData(), 0, vk::IndexType::eUint32);
-		const int num_of_indices = static_cast<uint32_t>(m_indices[i].size());
-		_cmd_buffer.drawIndexed(num_of_indices, 1, 0, 0, 0);
-	}
+	vk::DeviceSize offsets[] = { 0 };
+	_cmd_buffer.bindVertexBuffers(0, 1, &m_vertex_buffer.BufferData(), offsets);
+	_cmd_buffer.bindIndexBuffer(m_index_buffer.BufferData(), 0, vk::IndexType::eUint32);
+	const int num_of_indices = static_cast<uint32_t>(m_indices.size());
+	_cmd_buffer.drawIndexed(num_of_indices, 1, 0, 0, 0);
 }
