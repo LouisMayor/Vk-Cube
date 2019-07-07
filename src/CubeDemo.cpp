@@ -835,12 +835,12 @@ void VkCubeDemo::UpdateBufferData(uint32_t _image_index, bool _resize)
 
 		if (!updated_once)
 		{
-			m_dir_light_ubo.GetData().direction = glm::vec3(-0.5f, 0.0f, 1.0f);
+			m_dir_light_ubo.GetData(_image_index).direction = glm::vec3(0.0f, 1.0f, 0.0f);
 			m_dir_light_ubo.Map(g_VkGenerator.Device(), _image_index);
 
-			if (_image_index > 2)
+			if (_image_index == m_swapchain.ImageViews().size() - 1)
 			{
-				updated_once = true;
+				updated_once = true; 
 			}
 		}
 	}

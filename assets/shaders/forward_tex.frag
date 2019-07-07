@@ -41,7 +41,7 @@ void main()
 	vec3 camera_direction = normalize(camera_position - fragWorldPos);
 	
 	vec3 sun_colour = vec3(1.0f);
-	vec3 sun_direction = vec3(0.0f, 1.0f, 0.0f);
+	vec3 sun_direction = DirectionalLight.Direction;
 	float sun_distance = 50.0f;
 	float sun_strength = 50.0f;
 	
